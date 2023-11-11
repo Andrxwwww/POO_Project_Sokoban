@@ -26,7 +26,7 @@ public class Empilhadora implements ImageTile{
 
 	@Override
 	public int getLayer() {
-		return 2;
+		return 4;
 	}
 
 	//S1

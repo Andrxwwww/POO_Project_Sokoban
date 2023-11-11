@@ -23,7 +23,7 @@ public class Chao implements ImageTile {
 
 	@Override
 	public int getLayer() {
-		return 2;
+		return 1;
 	}
 
 }

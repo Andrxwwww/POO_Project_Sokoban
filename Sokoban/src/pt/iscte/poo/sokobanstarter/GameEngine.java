@@ -111,12 +111,14 @@ public class GameEngine implements Observer {
 	private void createWarehouse() {
 
 		try {
-			Scanner scanner = new Scanner(new File("levels\\level0.txt"));
+			Scanner scanner = new Scanner(new File("levels\\level1.txt"));
 			while (scanner.hasNextLine()) {
+					for (int y=0; y<GRID_HEIGHT; y++){
 					String symbol = scanner.nextLine();
 						for(int i = 0; i < symbol.length(); i++){
-							correspondSymbol(symbol.charAt(i));
+							correspondSymbol(symbol.charAt(i),i,y);
 						}
+					}
 			}
 			scanner.close();
 		} catch (FileNotFoundException e) { // se nao encontrar o ficheiro entao
@@ -133,9 +135,7 @@ public class GameEngine implements Observer {
 		*/		
 	}
 
-	private void correspondSymbol (char symbol) {
-		for (int y=0; y<GRID_HEIGHT; y++){
-			for (int x=0; x<GRID_HEIGHT; x++){
+	private void correspondSymbol (char symbol , int x, int y) {
 				switch (symbol) {
 					case '=':
 						tileList.add(new Vazio(new Point2D(x,y)));
@@ -153,14 +153,13 @@ public class GameEngine implements Observer {
 						tileList.add(new Caixote(new Point2D(x,y)));
 					break;
 					case 'E':
+						tileList.add(new Chao(new Point2D(x,y)));
 						bobcat = new Empilhadora( new Point2D(x,y));
 						tileList.add(bobcat);
 					break;
 					default:
 					break;
 				}
-			}
-		}
 	}
 
 	// Criacao de mais objetos - neste exemplo e' uma empilhadora e dois caixotes
