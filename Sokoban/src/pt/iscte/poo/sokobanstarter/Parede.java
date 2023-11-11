@@ -23,7 +23,7 @@ public class Parede implements ImageTile {
 
     @Override
     public int getLayer() {
-        return 3; // vai ser 3 para nao passsar pela empilhadora
+        return 2;
     }
     
 }

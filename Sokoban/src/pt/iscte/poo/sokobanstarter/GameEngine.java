@@ -85,22 +85,22 @@ public class GameEngine implements Observer {
 		switch (key) {
 			case KeyEvent.VK_UP:
 				bobcat.move(Direction.UP);
-				break;
+			break;
 			case KeyEvent.VK_DOWN:
 				key = KeyEvent.VK_DOWN;
 				bobcat.move(Direction.DOWN);
-				break;
+			break;
 			case KeyEvent.VK_LEFT:
 				key = KeyEvent.VK_LEFT;
 				bobcat.move(Direction.LEFT);
-				break;
+			break;
 			case KeyEvent.VK_RIGHT:
 				key = KeyEvent.VK_RIGHT;
 				bobcat.move(Direction.RIGHT);
-				break;
+			break;
 
 			default:
-				break;
+			break;
 		}
 		gui.update();                  // redesenha a lista de ImageTiles na GUI, 
 		                               // tendo em conta as novas posicoes dos objetos
@@ -110,21 +110,18 @@ public class GameEngine implements Observer {
 	// Criacao da planta do armazem - so' chao neste exemplo 
 	private void createWarehouse() {
 
-		/*try {
-			Scanner scanner = new Scanner(new File("level0.txt"));
+		try {
+			Scanner scanner = new Scanner(new File("levels\\level0.txt"));
 			while (scanner.hasNextLine()) {
-				String symbol = scanner.nextLine();
-				for (int y=0; y<GRID_HEIGHT; y++)
-					for (int x=0; x<GRID_HEIGHT; x++)
-						for(int i = 0; i < symbol.length(); i++)
-							correspondSymbol(symbol.charAt(i),x,y);
-							gui.update(); 
+					String symbol = scanner.nextLine();
+						for(int i = 0; i < symbol.length(); i++){
+							correspondSymbol(symbol.charAt(i));
+						}
+			}
 			scanner.close();
-			}	
-
 		} catch (FileNotFoundException e) { // se nao encontrar o ficheiro entao
 			System.err.println("Erro: ficheiro/level não encontrado :(");
-		}  */
+		}  
 		
 		
 		
@@ -136,52 +133,54 @@ public class GameEngine implements Observer {
 		*/		
 	}
 
-	private void correspondSymbol (char symbol , int x , int y) {
-		switch (symbol) {
-			case '=':
-				tileList.add(new Vazio(new Point2D(x,y)));
-				break;
-			case '#':
-				tileList.add(new Parede(new Point2D(x,y)));
-				break;
-			case ' ':
-				tileList.add(new Chao(new Point2D(x,y)));
-				break;
-			case 'X':
-				tileList.add(new Alvo(new Point2D(x,y)));
-				break;
-			case 'C':
-				tileList.add(new Caixote(new Point2D(x,y)));
-				break;
-			case 'E':
-				bobcat = new Empilhadora( new Point2D(x,y));
-				tileList.add(bobcat);
-				break;
-			default:
-			break;
+	private void correspondSymbol (char symbol) {
+		for (int y=0; y<GRID_HEIGHT; y++){
+			for (int x=0; x<GRID_HEIGHT; x++){
+				switch (symbol) {
+					case '=':
+						tileList.add(new Vazio(new Point2D(x,y)));
+					break;
+					case '#':
+						tileList.add(new Parede(new Point2D(x,y)));
+					break;
+					case ' ':
+						tileList.add(new Chao(new Point2D(x,y)));
+					break;
+					case 'X':
+						tileList.add(new Alvo(new Point2D(x,y)));
+					break;
+					case 'C':
+						tileList.add(new Caixote(new Point2D(x,y)));
+					break;
+					case 'E':
+						bobcat = new Empilhadora( new Point2D(x,y));
+						tileList.add(bobcat);
+					break;
+					default:
+					break;
+				}
+			}
 		}
 	}
 
 	// Criacao de mais objetos - neste exemplo e' uma empilhadora e dois caixotes
 	private void createMoreStuff() {
-		
+		/* 
 		try {
-			String filePath = "level0.txt";
-       		Scanner scanner = new Scanner(new File(filePath));
+       		Scanner scanner = new Scanner(new File("levels\\level0.txt"));
 			while (scanner.hasNextLine()) {
 				String symbol = scanner.nextLine();
 				for (int y=0; y<GRID_HEIGHT; y++)
 					for (int x=0; x<GRID_HEIGHT; x++)
 						for(int i = 0; i < symbol.length(); i++)
 							correspondSymbol(symbol.charAt(i),x,y);
-
+			}
 			scanner.close();
-			}	
 
 		} catch (FileNotFoundException e) { // se nao encontrar o ficheiro entao
 			System.err.println("Erro: ficheiro/level nao encontrado :(");
 		} 
-
+		*/
 	}
 
 	// Envio das mensagens para a GUI - note que isto so' precisa de ser feito no inicio
