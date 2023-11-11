@@ -113,10 +113,10 @@ public class GameEngine implements Observer {
 		try {
 			Scanner scanner = new Scanner(new File("levels\\level1.txt"));
 			while (scanner.hasNextLine()) {
-					for (int y=0; y<GRID_HEIGHT; y++){
-					String symbol = scanner.nextLine();
-						for(int i = 0; i < symbol.length(); i++){
-							correspondSymbol(symbol.charAt(i),i,y);
+					for (int y=0; y<GRID_HEIGHT; y++){ //loop pela altura da Tela
+					String symbol = scanner.nextLine(); // meter a string/linha numa var
+						for(int i = 0; i < symbol.length(); i++){// loop pela a length da palavra que vai acabar por ser a largura da tela tambem
+							correspondSymbol(symbol.charAt(i),i,y);// verifica qual é o char correspondente e ,mete na tela ( isso e na outra func a baixo )
 						}
 					}
 			}
