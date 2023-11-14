@@ -4,7 +4,7 @@ import pt.iscte.poo.gui.ImageTile;
 import pt.iscte.poo.utils.Point2D;
 
 public class Alvo implements ImageTile{
-
+    
     private Point2D Point2D;
     
     public Alvo(Point2D Point2D){

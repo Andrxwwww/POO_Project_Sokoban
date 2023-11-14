@@ -1,11 +1,11 @@
 package pt.iscte.poo.sokobanstarter;
 import pt.iscte.poo.utils.Point2D;
 
-public class Vazio extends NotMovable {
+public class Buraco extends NotMovable {
 
     private Point2D Point2D;
 
-    public Vazio(Point2D Point2D) {
+    public Buraco(Point2D Point2D) {
         this.Point2D = Point2D;
     }
 
@@ -16,7 +16,7 @@ public class Vazio extends NotMovable {
 
     @Override
     public String getName() {
-        return "Vazio";
+        return "Buraco";
     }
 
     @Override
@@ -26,6 +26,8 @@ public class Vazio extends NotMovable {
 
     @Override
     public int getLayer() {
-        return 0;
+        // se meter uma palete mais tarde a layer tem de mudar
+        return 2;
     }
+    
 }

@@ -39,13 +39,13 @@ public class GameEngine implements Observer {
 
 	private static GameEngine INSTANCE; // Referencia para o unico objeto GameEngine (singleton)
 	private ImageMatrixGUI gui;  		// Referencia para ImageMatrixGUI (janela de interface com o utilizador) 
-	private List<ImageTile> tileList;	// Lista de imagens
+	private List<GameElement> gameElementsList;	// Lista de imagens
 	private Empilhadora bobcat;	        // Referencia para a empilhadora
 
 
 	// Construtor - neste exemplo apenas inicializa uma lista de ImageTiles
 	private GameEngine() {
-		tileList = new ArrayList<>();   
+		gameElementsList = new ArrayList<>();   
 	}
 
 	// Implementacao do singleton para o GameEngine
@@ -69,7 +69,6 @@ public class GameEngine implements Observer {
 		
 		// Criar o cenario de jogo
 		createWarehouse();      // criar o armazem
-		createMoreStuff();      // criar mais algun objetos (empilhadora, caixotes,...)
 		sendImagesToGUI();      // enviar as imagens para a GUI
 
 		// Escrever uma mensagem na StatusBar
@@ -123,68 +122,39 @@ public class GameEngine implements Observer {
 			scanner.close();
 		} catch (FileNotFoundException e) { // se nao encontrar o ficheiro entao
 			System.err.println("Erro: ficheiro/level não encontrado :(");
-		}  
-		
-		
-		
-	
-		/*
-		for (int y=0; y<GRID_HEIGHT; y++)
-			for (int x=0; x<GRID_HEIGHT; x++)
-				tileList.add(new Chao(new Point2D(x,y)));
-		*/		
+		}  	
 	}
 
 	private void correspondSymbol (char symbol , int x, int y) {
 				switch (symbol) {
 					case '=':
-						tileList.add(new Vazio(new Point2D(x,y)));
+						gameElementsList.add(new Vazio(new Point2D(x,y)));
 					break;
 					case '#':
-						tileList.add(new Parede(new Point2D(x,y)));
+						gameElementsList.add(new Parede(new Point2D(x,y)));
 					break;
 					case ' ':
-						tileList.add(new Chao(new Point2D(x,y)));
+						gameElementsList.add(new Chao(new Point2D(x,y)));
 					break;
 					case 'X':
-						tileList.add(new Alvo(new Point2D(x,y)));
+						gameElementsList.add(new Alvo(new Point2D(x,y)));
 					break;
 					case 'C':
-						tileList.add(new Caixote(new Point2D(x,y)));
+						gameElementsList.add(new Caixote(new Point2D(x,y)));
 					break;
 					case 'E':
-						tileList.add(new Chao(new Point2D(x,y)));
+						gameElementsList.add(new Chao(new Point2D(x,y)));
 						bobcat = new Empilhadora( new Point2D(x,y));
-						tileList.add(bobcat);
+						gameElementsList.add(bobcat);
 					break;
 					default:
 					break;
 				}
 	}
 
-	// Criacao de mais objetos - neste exemplo e' uma empilhadora e dois caixotes
-	private void createMoreStuff() {
-		/* 
-		try {
-       		Scanner scanner = new Scanner(new File("levels\\level0.txt"));
-			while (scanner.hasNextLine()) {
-				String symbol = scanner.nextLine();
-				for (int y=0; y<GRID_HEIGHT; y++)
-					for (int x=0; x<GRID_HEIGHT; x++)
-						for(int i = 0; i < symbol.length(); i++)
-							correspondSymbol(symbol.charAt(i),x,y);
-			}
-			scanner.close();
-
-		} catch (FileNotFoundException e) { // se nao encontrar o ficheiro entao
-			System.err.println("Erro: ficheiro/level nao encontrado :(");
-		} 
-		*/
-	}
-
 	// Envio das mensagens para a GUI - note que isto so' precisa de ser feito no inicio
 	// Nao e' suposto re-enviar os objetos se a unica coisa que muda sao as posicoes  
 	private void sendImagesToGUI() {
-		gui.addImages(tileList);
+		gui.addImages(gameElementsList);
 	}
 }

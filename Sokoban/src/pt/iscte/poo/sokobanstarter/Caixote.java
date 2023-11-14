@@ -23,7 +23,7 @@ public class Caixote implements ImageTile {
 
 	@Override
 	public int getLayer() {
-		return 2;
+		return 0;
 	}
 
 }

@@ -1,22 +1,23 @@
 package pt.iscte.poo.sokobanstarter;
 import pt.iscte.poo.utils.Point2D;
 
-public class Vazio extends NotMovable {
+public class ParedeRachada extends NotMovable {
 
     private Point2D Point2D;
 
-    public Vazio(Point2D Point2D) {
+    public ParedeRachada(Point2D Point2D) {
         this.Point2D = Point2D;
     }
 
     @Override
     public boolean doesElapse() {
-        return false;
+        // add a function ??
+        return true;
     }
 
     @Override
     public String getName() {
-        return "Vazio";
+        return "ParedeRachada";
     }
 
     @Override
@@ -26,6 +27,7 @@ public class Vazio extends NotMovable {
 
     @Override
     public int getLayer() {
-        return 0;
+        return 2;
     }
+    
 }
