@@ -1,10 +1,9 @@
 package pt.iscte.poo.sokobanstarter;
 
-import pt.iscte.poo.gui.ImageTile;
 import pt.iscte.poo.utils.Direction;
 import pt.iscte.poo.utils.Point2D;
 
-public class Empilhadora implements ImageTile{
+public class Empilhadora extends Movable{
 
 	private Point2D position;
 	private String imageName;
@@ -27,6 +26,11 @@ public class Empilhadora implements ImageTile{
 	@Override
 	public int getLayer() {
 		return 4;
+	}
+
+	@Override
+	public boolean doesElapse(NotMovable element) {
+		return false;
 	}
 
 	//S1

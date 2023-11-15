@@ -2,17 +2,17 @@ package pt.iscte.poo.sokobanstarter;
 
 import pt.iscte.poo.utils.Point2D;
 
-public class Caixote extends Movable{
+public class Palete extends Movable{
 
 	private Point2D position;
 	
-	public Caixote(Point2D initialPosition){
+	public Palete(Point2D initialPosition){
 		position = initialPosition;
 	}
 	
 	@Override
 	public String getName() {
-		return "Caixote";
+		return "Palete";
 	}
 
 	@Override

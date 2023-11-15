@@ -40,6 +40,8 @@ public class GameEngine implements Observer {
 	private static GameEngine INSTANCE; // Referencia para o unico objeto GameEngine (singleton)
 	private ImageMatrixGUI gui;  		// Referencia para ImageMatrixGUI (janela de interface com o utilizador) 
 	private List<GameElement> gameElementsList;	// Lista de imagens
+	private List<NotMovable> notMovableList;	// Lista de imagens
+	private List<Movable> movableList;	// Lista de imagens
 	private Empilhadora bobcat;	        // Referencia para a empilhadora
 
 
@@ -122,7 +124,8 @@ public class GameEngine implements Observer {
 			scanner.close();
 		} catch (FileNotFoundException e) { // se nao encontrar o ficheiro entao
 			System.err.println("Erro: ficheiro/level não encontrado :(");
-		}  	
+		}  
+		gui.update();	
 	}
 
 	private void correspondSymbol (char symbol , int x, int y) {
@@ -155,6 +158,8 @@ public class GameEngine implements Observer {
 	// Envio das mensagens para a GUI - note que isto so' precisa de ser feito no inicio
 	// Nao e' suposto re-enviar os objetos se a unica coisa que muda sao as posicoes  
 	private void sendImagesToGUI() {
-		gui.addImages(gameElementsList);
+		for (ImageTile img : gameElementsList) {
+			gui.addImage(img);
+		}
 	}
 }
