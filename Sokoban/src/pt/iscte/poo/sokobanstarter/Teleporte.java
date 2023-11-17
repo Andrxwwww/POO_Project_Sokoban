@@ -26,7 +26,7 @@ public class Teleporte extends NotMovable {
 
     @Override
     public int getLayer() {
-        return 3;
+        return 1;
     }
     
 }

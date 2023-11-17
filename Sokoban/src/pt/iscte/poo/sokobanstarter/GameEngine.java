@@ -5,6 +5,7 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Vector;
 import java.io.File;
 import java.io.FileNotFoundException;
 
@@ -14,6 +15,7 @@ import pt.iscte.poo.observer.Observed;
 import pt.iscte.poo.observer.Observer;
 import pt.iscte.poo.utils.Direction;
 import pt.iscte.poo.utils.Point2D;
+import pt.iscte.poo.utils.Vector2D;
 
 // Note que esta classe e' um exemplo - nao pretende ser o inicio do projeto, 
 // embora tambem possa ser usada para isso.
@@ -83,76 +85,109 @@ public class GameEngine implements Observer {
 	public void update(Observed source) {
 		int key = gui.keyPressed();    // obtem o codigo da tecla pressionada
 		
-		switch (key) {
-			case KeyEvent.VK_UP:
-				bobcat.move(Direction.UP);
-			break;
-			case KeyEvent.VK_DOWN:
-				key = KeyEvent.VK_DOWN;
-				bobcat.move(Direction.DOWN);
-			break;
-			case KeyEvent.VK_LEFT:
-				key = KeyEvent.VK_LEFT;
-				bobcat.move(Direction.LEFT);
-			break;
-			case KeyEvent.VK_RIGHT:
-				key = KeyEvent.VK_RIGHT;
-				bobcat.move(Direction.RIGHT);
-			break;
-
-			default:
-			break;
-		}
-		gui.update();                  // redesenha a lista de ImageTiles na GUI, 
-		                               // tendo em conta as novas posicoes dos objetos
+		bobcatKeyMechanics(key);
+			
+		gui.update();                  // redesenha a lista de ImageTiles na GUI, tendo em conta as novas posicoes dos objetos
 	}
 
 
 	// Criacao da planta do armazem - so' chao neste exemplo 
 	private void createWarehouse() {
-
+		notMovableList = new ArrayList<>();
+ 		movableList = new ArrayList<>();	
 		try {
 			Scanner scanner = new Scanner(new File("levels\\level1.txt"));
 			while (scanner.hasNextLine()) {
 					for (int y=0; y<GRID_HEIGHT; y++){ //loop pela altura da Tela
 					String symbol = scanner.nextLine(); // meter a string/linha numa var
 						for(int i = 0; i < symbol.length(); i++){// loop pela a length da palavra que vai acabar por ser a largura da tela tambem
-							correspondSymbol(symbol.charAt(i),i,y);// verifica qual é o char correspondente e ,mete na tela ( isso e na outra func a baixo )
+							correspondSymbol(symbol.charAt(i), new Point2D(i,y));// verifica qual é o char correspondente e ,mete na tela ( isso e na outra func a baixo )
 						}
 					}
 			}
 			scanner.close();
 		} catch (FileNotFoundException e) { // se nao encontrar o ficheiro entao
 			System.err.println("Erro: ficheiro/level não encontrado :(");
-		}  
+		}
 		gui.update();	
 	}
 
-	private void correspondSymbol (char symbol , int x, int y) {
-				switch (symbol) {
-					case '=':
-						gameElementsList.add(new Vazio(new Point2D(x,y)));
-					break;
-					case '#':
-						gameElementsList.add(new Parede(new Point2D(x,y)));
-					break;
-					case ' ':
-						gameElementsList.add(new Chao(new Point2D(x,y)));
-					break;
-					case 'X':
-						gameElementsList.add(new Alvo(new Point2D(x,y)));
-					break;
-					case 'C':
-						gameElementsList.add(new Caixote(new Point2D(x,y)));
-					break;
-					case 'E':
-						gameElementsList.add(new Chao(new Point2D(x,y)));
-						bobcat = new Empilhadora( new Point2D(x,y));
-						gameElementsList.add(bobcat);
-					break;
-					default:
-					break;
+	private void bobcatKeyMechanics(int key){
+
+		if(isValidMove()){
+			bobcat.move(Direction.directionFor(key));
+		} 
+		/*else {
+			System.out.println("Invalid move!"); // debug
+		}*/
+	}
+
+	private boolean isValidMove(){
+		return !isAWall();
+	}
+
+	private boolean isAWall(){
+		for (NotMovable notMovable : notMovableList) {
+			if (notMovable instanceof Parede) {
+				System.out.println("Checking position: " + bobcat.getPosition().getX() + ", " + bobcat.getPosition().getY());
+            	System.out.println("Bobcat position: " + bobcat.getPosition());
+				if(bobcat.nextPosition(gui.keyPressed()).equals(notMovable.getPosition())){
+					System.out.println("Collision detected!");
+					return true;
 				}
+			}
+		}
+		return false;
+	}
+
+	private void correspondSymbol(char symbol, Point2D point) {
+		switch (symbol) {
+			case '=':
+				gameElementsList.add(new Vazio(point));
+				notMovableList.add(new Vazio(point));
+				break;
+			case '#':
+				gameElementsList.add(new Parede(point));
+				notMovableList.add(new Parede(point));
+				break;
+			case ' ':
+				gameElementsList.add(new Chao(point));
+				notMovableList.add(new Chao(point));
+				break;
+			case 'X':
+				gameElementsList.add(new Alvo(point));
+				notMovableList.add(new Alvo(point));
+				break;
+			case 'C':
+				gameElementsList.add(new Caixote(point));
+				movableList.add(new Caixote(point));
+				break;
+			case 'E':
+				movableList.add(new Empilhadora(point));
+				gameElementsList.add(new Chao(point));
+				bobcat = new Empilhadora(point);
+				gameElementsList.add(bobcat);
+				break;
+			case 'T':
+				gameElementsList.add(new Teleporte(point));
+				gameElementsList.add(new Chao(point));
+				notMovableList.add(new Teleporte(point));
+				break;
+			case 'O':
+				gameElementsList.add(new Buraco(point));
+				notMovableList.add(new Buraco(point));
+				break;
+			case 'P':
+				gameElementsList.add(new Palete(point));
+				movableList.add(new Palete(point));
+				break;
+			case '%':
+				gameElementsList.add(new ParedeRachada(point));
+				notMovableList.add(new ParedeRachada(point));
+				break;
+			default:
+				break;
+		}
 	}
 
 	// Envio das mensagens para a GUI - note que isto so' precisa de ser feito no inicio

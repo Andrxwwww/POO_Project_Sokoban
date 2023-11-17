@@ -27,7 +27,7 @@ public class Buraco extends NotMovable {
     @Override
     public int getLayer() {
         // se meter uma palete mais tarde a layer tem de mudar
-        return 2;
+        return 1;
     }
     
 }

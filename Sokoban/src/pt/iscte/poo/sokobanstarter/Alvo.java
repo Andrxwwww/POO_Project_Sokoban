@@ -26,7 +26,7 @@ public class Alvo extends NotMovable {
 
     @Override
     public int getLayer() {
-        return 2;
+        return 1;
     }
     
 }

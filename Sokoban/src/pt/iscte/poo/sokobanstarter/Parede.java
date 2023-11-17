@@ -14,6 +14,10 @@ public class Parede extends NotMovable {
         return true;
     }
 
+    public boolean itsAWall() {
+        return true;
+    }
+    
     @Override
     public String getName() {
         return "Parede";
@@ -26,7 +30,7 @@ public class Parede extends NotMovable {
 
     @Override
     public int getLayer() {
-        return 3;
+        return 2;
     }
     
 }

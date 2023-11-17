@@ -14,6 +14,13 @@ public class Empilhadora extends Movable{
 	}
 	
 	@Override
+	public Point2D nextPosition(int key) {
+		Direction direction = Direction.directionFor(key);
+		return position.plus(direction.asVector());
+	}
+
+
+	@Override
 	public String getName() {
 		return imageName;
 	}
@@ -25,12 +32,22 @@ public class Empilhadora extends Movable{
 
 	@Override
 	public int getLayer() {
-		return 4;
+		return 3;
 	}
 
 	@Override
 	public boolean doesElapse(NotMovable element) {
 		return false;
+	}
+
+	@Override
+	public boolean doesElapse(Movable element) {
+		return true;
+	}
+
+	@Override
+	public void moveToPoint(Point2D point) {
+		position = point;
 	}
 
 	//S1
