@@ -45,6 +45,7 @@ public class GameEngine implements Observer {
 	private List<NotMovable> notMovableList;	// Lista de imagens
 	private List<Movable> movableList;	// Lista de imagens
 	private Empilhadora bobcat;	        // Referencia para a empilhadora
+	private int level_num;	// Numero do nivel a carregar
 
 
 	// Construtor - neste exemplo apenas inicializa uma lista de ImageTiles
@@ -92,11 +93,14 @@ public class GameEngine implements Observer {
 
 
 	// Criacao da planta do armazem - so' chao neste exemplo 
+	
+
 	private void createWarehouse() {
+		level_num = 1;
 		notMovableList = new ArrayList<>();
  		movableList = new ArrayList<>();	
 		try {
-			Scanner scanner = new Scanner(new File("levels\\level1.txt"));
+			Scanner scanner = new Scanner(new File("levels\\level" + level_num + ".txt"));
 			while (scanner.hasNextLine()) {
 					for (int y=0; y<GRID_HEIGHT; y++){ //loop pela altura da Tela
 					String symbol = scanner.nextLine(); // meter a string/linha numa var
@@ -114,25 +118,31 @@ public class GameEngine implements Observer {
 
 	private void bobcatKeyMechanics(int key){
 
-		if(isValidMove()){
-			bobcat.move(Direction.directionFor(key));
-		} 
-		/*else {
-			System.out.println("Invalid move!"); // debug
-		}*/
-	}
-
-	private boolean isValidMove(){
-		return !isAWall();
+		if(!isAWall() && !canBeMoved()){
+			bobcat.movePosition(Direction.directionFor(key));
+		}
+		
 	}
 
 	private boolean isAWall(){
+
 		for (NotMovable notMovable : notMovableList) {
 			if (notMovable instanceof Parede) {
-				System.out.println("Checking position: " + bobcat.getPosition().getX() + ", " + bobcat.getPosition().getY());
-            	System.out.println("Bobcat position: " + bobcat.getPosition());
 				if(bobcat.nextPosition(gui.keyPressed()).equals(notMovable.getPosition())){
-					System.out.println("Collision detected!");
+					bobcat.move(gui.keyPressed());
+					return true;
+				}
+			}
+		}
+		bobcat.move(gui.keyPressed());
+		return false;
+	}
+
+	private boolean canBeMoved(){
+		for (Movable movable : movableList) {
+			if (movable instanceof Caixote) {
+				if(bobcat.nextPosition(gui.keyPressed()).equals(movable.getPosition())){
+					// falta funcao para mover a caixa
 					return true;
 				}
 			}

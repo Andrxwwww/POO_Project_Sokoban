@@ -52,7 +52,8 @@ public class Empilhadora extends Movable{
 
 	//S1
 	// Move e muda a imagem segundo a direcao dada, se estiver dentro dos limites
-	public void move(Direction direction) { 
+	public void move(int key) {
+		Direction direction = Direction.directionFor(key);
 		switch (direction) {
 			case UP:
 				imageName = "Empilhadora_U";
@@ -71,6 +72,16 @@ public class Empilhadora extends Movable{
 				imageName = "Empilhadora_U";
 			break;
 		}
+	}
+
+	public void movePosition(Direction direction) {
+		Point2D newPosition = position.plus(direction.asVector());
+		if (newPosition.getX()>=0 && newPosition.getX()<10 && newPosition.getY()>=0 && newPosition.getY()<10 ){
+			position = newPosition;
+		}
+	}
+
+	public void moveBox(Direction direction) {
 		Point2D newPosition = position.plus(direction.asVector());
 		if (newPosition.getX()>=0 && newPosition.getX()<10 && newPosition.getY()>=0 && newPosition.getY()<10 ){
 			position = newPosition;

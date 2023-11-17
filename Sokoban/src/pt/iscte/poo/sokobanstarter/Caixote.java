@@ -46,4 +46,11 @@ public class Caixote extends Movable{
 	public void moveToPoint(Point2D point) {
 		position = point;
 	}
+
+	public void moveBox(Direction direction) {
+		Point2D newPosition = position.plus(direction.asVector());
+		if (newPosition.getX()>=0 && newPosition.getX()<10 && newPosition.getY()>=0 && newPosition.getY()<10 ){
+			position = newPosition;
+		}
+	}
 }
