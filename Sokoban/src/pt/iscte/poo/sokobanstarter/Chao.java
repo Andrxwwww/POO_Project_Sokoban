@@ -1,7 +1,7 @@
 package pt.iscte.poo.sokobanstarter;
 import pt.iscte.poo.utils.Point2D;
 
-public class Chao extends NotMovable {
+public class Chao extends NotCollidable {
 
     private Point2D Point2D;
 
@@ -9,10 +9,7 @@ public class Chao extends NotMovable {
         this.Point2D = Point2D;
     }
 
-    @Override
-    public boolean doesElapse() {
-        return false;
-    }
+    
 
     @Override
     public String getName() {

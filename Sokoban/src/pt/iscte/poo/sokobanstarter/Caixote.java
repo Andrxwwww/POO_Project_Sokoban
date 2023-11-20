@@ -3,18 +3,12 @@ package pt.iscte.poo.sokobanstarter;
 import pt.iscte.poo.utils.Direction;
 import pt.iscte.poo.utils.Point2D;
 
-public class Caixote extends Movable{
+public class Caixote extends Collidable{
 
 	private Point2D position;
 	
-	public Caixote(Point2D initialPosition){
-		position = initialPosition;
-	}
-
-	@Override
-	public Point2D nextPosition(int key) {
-		Direction direction = Direction.directionFor(key);
-		return position.plus(direction.asVector());
+	public Caixote(Point2D point2d){
+		this.position = point2d;
 	}
 	
 	@Override
@@ -33,21 +27,24 @@ public class Caixote extends Movable{
 	}
 
 	@Override
-	public boolean doesElapse(NotMovable element) {
+	public int collidableLevel() {
+		return 2;
+	}
+
+	public boolean isAWall() {
+		return false;
+	}
+
+	public boolean isMovable() {
 		return true;
 	}
 
-	@Override
-	public boolean doesElapse(Movable element) {
-		return true;
+	public Point2D nextPosition(int key) {
+		Direction direction = Direction.directionFor(key);
+		return position.plus(direction.asVector());
 	}
 
-	@Override
-	public void moveToPoint(Point2D point) {
-		position = point;
-	}
-
-	public void moveBox(Direction direction) {
+	public void movePosition(Direction direction) {
 		Point2D newPosition = position.plus(direction.asVector());
 		if (newPosition.getX()>=0 && newPosition.getX()<10 && newPosition.getY()>=0 && newPosition.getY()<10 ){
 			position = newPosition;

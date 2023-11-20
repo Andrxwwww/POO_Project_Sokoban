@@ -6,15 +6,35 @@ import pt.iscte.poo.utils.Point2D;
 
 public abstract class GameElement implements ImageTile {
 
-    public static GameElement createGameElement(String gameElementname , Point2D position){
-        if ( gameElementname.equals("Parede") || gameElementname.equals("Buraco") || gameElementname.equals("ParedeRachada") || gameElementname.equals("Teleporte") 
-        || gameElementname.equals("Vazio") || gameElementname.equals("Caixote") || gameElementname.equals("Alvo") ){
-            return NotMovable.create(gameElementname, position);
-        } else if ( gameElementname.equals("Palete") || gameElementname.equals("Caixote") || gameElementname.equals("Empilhadora") ){
-            return Movable.create(gameElementname, position);
-        } else {
-            throw new IllegalArgumentException("This object doesn't exist :( [gameElement]");
+    public static GameElement create (char c, Point2D position){
+        switch (c){
+            case '#':
+                return new Parede(position);
+            case 'O':
+                return new Buraco(position);
+            case 'X':
+                return new Alvo(position);
+            case 'C':
+                return new Caixote(position);
+            case 'P':
+                return new Palete(position);
+            case 'E':
+                return new Empilhadora(position);
+            case 'T':
+                return new Teleporte(position);
+            case ' ':
+                return new Chao(position);
+            case '=':
+                return new Vazio(position);
+            case '%':
+                return new ParedeRachada(position);
+            case 'B':
+                return new Bateria(position);
+            case 'M':
+                return new Martelo(position);
+            
+            default:
+                throw new IllegalArgumentException("Invalid element name: " + c + "the element doesnt exist :(");
         }
     }
-    
 }

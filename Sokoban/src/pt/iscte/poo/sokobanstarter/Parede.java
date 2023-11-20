@@ -1,7 +1,7 @@
 package pt.iscte.poo.sokobanstarter;
 import pt.iscte.poo.utils.Point2D;
 
-public class Parede extends NotMovable {
+public class Parede extends Collidable {
 
     private Point2D Point2D;
 
@@ -10,12 +10,13 @@ public class Parede extends NotMovable {
     }
 
     @Override
-    public boolean doesElapse() {
+    public boolean isAWall() {
         return true;
     }
 
-    public boolean itsAWall() {
-        return true;
+    @Override
+    public boolean isMovable() {
+        return false;
     }
     
     @Override
@@ -30,7 +31,18 @@ public class Parede extends NotMovable {
 
     @Override
     public int getLayer() {
-        return 2;
+        return 3;
     }
+
+    @Override
+    public int collidableLevel() {
+        return 3;
+    }
+
+    @Override
+    public Point2D nextPosition(int key) {
+        return Point2D;
+    }
+
     
 }

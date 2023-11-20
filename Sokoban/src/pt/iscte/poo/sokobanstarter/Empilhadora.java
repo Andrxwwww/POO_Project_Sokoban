@@ -3,20 +3,25 @@ package pt.iscte.poo.sokobanstarter;
 import pt.iscte.poo.utils.Direction;
 import pt.iscte.poo.utils.Point2D;
 
-public class Empilhadora extends Movable{
+public class Empilhadora extends GameElement{
 
 	private Point2D position;
 	private String imageName;
+	private int Battery;
 	
 	public Empilhadora(Point2D initialPosition){
-		position = initialPosition;
-		imageName = "Empilhadora_D";
+		this.position = initialPosition;
+		this.imageName = "Empilhadora_D";
+		this.Battery = 100;
 	}
 	
-	@Override
 	public Point2D nextPosition(int key) {
 		Direction direction = Direction.directionFor(key);
 		return position.plus(direction.asVector());
+	}
+
+	public int getBattery() {
+		return Battery;
 	}
 
 
@@ -35,19 +40,20 @@ public class Empilhadora extends Movable{
 		return 3;
 	}
 
-	@Override
-	public boolean doesElapse(NotMovable element) {
-		return false;
+	public int collidableLevel() {
+		return 3;
 	}
 
-	@Override
-	public boolean doesElapse(Movable element) {
-		return true;
-	}
-
-	@Override
 	public void moveToPoint(Point2D point) {
 		position = point;
+	}
+
+	public int addBattery(int sumBattery) {
+		this.Battery += sumBattery;
+		if (Battery > 100) {
+			Battery = 100;
+		}
+		return Battery;
 	}
 
 	//S1
@@ -73,18 +79,16 @@ public class Empilhadora extends Movable{
 			break;
 		}
 	}
-
+	
 	public void movePosition(Direction direction) {
 		Point2D newPosition = position.plus(direction.asVector());
 		if (newPosition.getX()>=0 && newPosition.getX()<10 && newPosition.getY()>=0 && newPosition.getY()<10 ){
 			position = newPosition;
+			Battery--;
+			if( Battery == 0) {
+				//TODO
+			}
 		}
 	}
-
-	public void moveBox(Direction direction) {
-		Point2D newPosition = position.plus(direction.asVector());
-		if (newPosition.getX()>=0 && newPosition.getX()<10 && newPosition.getY()>=0 && newPosition.getY()<10 ){
-			position = newPosition;
-		}
-	}
+	
 }

@@ -1,17 +1,12 @@
 package pt.iscte.poo.sokobanstarter;
 import pt.iscte.poo.utils.Point2D;
 
-public class Buraco extends NotMovable {
+public class Buraco extends NotCollidable {
 
-    private Point2D Point2D;
+    private Point2D position;
 
-    public Buraco(Point2D Point2D) {
-        this.Point2D = Point2D;
-    }
-
-    @Override
-    public boolean doesElapse() {
-        return false;
+    public Buraco(Point2D point2d) {
+        this.position = point2d;
     }
 
     @Override
@@ -21,7 +16,7 @@ public class Buraco extends NotMovable {
 
     @Override
     public Point2D getPosition() {
-        return Point2D;
+        return position;
     }
 
     @Override

@@ -3,6 +3,7 @@ package pt.iscte.poo.sokobanstarter;
 import java.awt.RenderingHints.Key;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Vector;
@@ -42,15 +43,21 @@ public class GameEngine implements Observer {
 	private static GameEngine INSTANCE; // Referencia para o unico objeto GameEngine (singleton)
 	private ImageMatrixGUI gui;  		// Referencia para ImageMatrixGUI (janela de interface com o utilizador) 
 	private List<GameElement> gameElementsList;	// Lista de imagens
-	private List<NotMovable> notMovableList;	// Lista de imagens
-	private List<Movable> movableList;	// Lista de imagens
+	private List<NotCollidable> NotCollidableList;	// Lista de imagens
+	private List<Collidable> CollidableList;	// Lista de imagens
+	private List<Item> ItemList;	// Lista de imagens
+	private HashMap<Point2D, Collidable> CollidableLoc;	// Lista de imagens
 	private Empilhadora bobcat;	        // Referencia para a empilhadora
 	private int level_num;	// Numero do nivel a carregar
 
 
 	// Construtor - neste exemplo apenas inicializa uma lista de ImageTiles
 	private GameEngine() {
-		gameElementsList = new ArrayList<>();   
+		gameElementsList = new ArrayList<>();
+		NotCollidableList = new ArrayList<>();
+		CollidableList = new ArrayList<>();
+		ItemList = new ArrayList<>();
+		CollidableLoc = new HashMap<>();
 	}
 
 	// Implementacao do singleton para o GameEngine
@@ -71,10 +78,11 @@ public class GameEngine implements Observer {
 		gui.registerObserver(this);            // 3. registar o objeto ativo GameEngine como observador da GUI
 		gui.go();                              // 4. lancar a GUI
 
-		
-		// Criar o cenario de jogo
-		createWarehouse();      // criar o armazem
+		this.level_num = 3;
+		createLevel(level_num);      // criar o armazem
+		pickUpBattery();
 		sendImagesToGUI();      // enviar as imagens para a GUI
+
 
 		// Escrever uma mensagem na StatusBar
 		gui.setStatusMessage("Sokoban Starter - demo");
@@ -95,17 +103,15 @@ public class GameEngine implements Observer {
 	// Criacao da planta do armazem - so' chao neste exemplo 
 	
 
-	private void createWarehouse() {
-		level_num = 1;
-		notMovableList = new ArrayList<>();
- 		movableList = new ArrayList<>();	
+	private void createLevel(int level_num) {
 		try {
 			Scanner scanner = new Scanner(new File("levels\\level" + level_num + ".txt"));
 			while (scanner.hasNextLine()) {
 					for (int y=0; y<GRID_HEIGHT; y++){ //loop pela altura da Tela
-					String symbol = scanner.nextLine(); // meter a string/linha numa var
-						for(int i = 0; i < symbol.length(); i++){// loop pela a length da palavra que vai acabar por ser a largura da tela tambem
-							correspondSymbol(symbol.charAt(i), new Point2D(i,y));// verifica qual é o char correspondente e ,mete na tela ( isso e na outra func a baixo )
+					String line = scanner.nextLine(); // meter a string/linha numa var
+						for(int x = 0; x < line.length(); x++){// loop pela a length da palavra que vai acabar por ser a largura da tela tambem
+							GameElement gameElement = GameElement.create(line.charAt(x), new Point2D(x,y));// verifica qual é o char correspondente e ,mete na tela ( isso e na outra func a baixo )
+							whatIsGameElement(gameElement);
 						}
 					}
 			}
@@ -116,95 +122,77 @@ public class GameEngine implements Observer {
 		gui.update();	
 	}
 
-	private void bobcatKeyMechanics(int key){
-
-		if(!isAWall() && !canBeMoved()){
-			bobcat.movePosition(Direction.directionFor(key));
+	private void whatIsGameElement(GameElement gameElement){
+		if( gameElement instanceof Parede || gameElement instanceof Caixote || gameElement instanceof Palete || gameElement instanceof ParedeRachada){
+			gameElementsList.add(gameElement);
+			CollidableList.add( (Collidable) gameElement);
+			CollidableLoc.put(gameElement.getPosition(), (Collidable) gameElement);
+			NotCollidableList.add( (NotCollidable) GameElement.create(' ', gameElement.getPosition()));
+		} else if ( gameElement instanceof Chao || gameElement instanceof Alvo || gameElement instanceof Buraco || gameElement instanceof Teleporte || gameElement instanceof Vazio){
+			gameElementsList.add(gameElement);
+			NotCollidableList.add( (NotCollidable) gameElement);
+		} else if ( gameElement instanceof Empilhadora){
+			NotCollidableList.add( (NotCollidable) GameElement.create(' ', gameElement.getPosition()) );
+			gameElementsList.add(gameElement);
+			bobcat = (Empilhadora) gameElement;
+		} else if ( gameElement instanceof Bateria || gameElement instanceof Martelo){
+			ItemList.add( (Item) gameElement);
+			gameElementsList.add(gameElement);
+			NotCollidableList.add( (NotCollidable) GameElement.create(' ', gameElement.getPosition()));
 		}
-		
 	}
 
-	private boolean isAWall(){
+	private void bobcatKeyMechanics(int key){
 
-		for (NotMovable notMovable : notMovableList) {
-			if (notMovable instanceof Parede) {
-				if(bobcat.nextPosition(gui.keyPressed()).equals(notMovable.getPosition())){
+		if (bobcatHitWallChecker()) {
+			bobcat.movePosition(Direction.directionFor(key));
+		}
+	}
+
+	private boolean bobcatHitWallChecker(){
+
+		for (Collidable collidable : CollidableList) {
+			if (collidable instanceof Parede) {
+				if( collidable.getPosition().equals(bobcat.nextPosition(gui.keyPressed()))){
 					bobcat.move(gui.keyPressed());
-					return true;
+					return false;
 				}
 			}
 		}
 		bobcat.move(gui.keyPressed());
-		return false;
+		return true;
 	}
 
-	private boolean canBeMoved(){
-		for (Movable movable : movableList) {
-			if (movable instanceof Caixote) {
-				if(bobcat.nextPosition(gui.keyPressed()).equals(movable.getPosition())){
-					// falta funcao para mover a caixa
-					return true;
+	public void pickUpBattery(){
+		for (Item item : ItemList) {
+			if (item instanceof Bateria) {
+				if( item.getPosition().equals(bobcat.getPosition())){
+					bobcat.addBattery(2);
+					ItemList.remove(item);
+					gui.removeImage(item);
 				}
 			}
 		}
-		return false;
 	}
 
-	private void correspondSymbol(char symbol, Point2D point) {
-		switch (symbol) {
-			case '=':
-				gameElementsList.add(new Vazio(point));
-				notMovableList.add(new Vazio(point));
-				break;
-			case '#':
-				gameElementsList.add(new Parede(point));
-				notMovableList.add(new Parede(point));
-				break;
-			case ' ':
-				gameElementsList.add(new Chao(point));
-				notMovableList.add(new Chao(point));
-				break;
-			case 'X':
-				gameElementsList.add(new Alvo(point));
-				notMovableList.add(new Alvo(point));
-				break;
-			case 'C':
-				gameElementsList.add(new Caixote(point));
-				movableList.add(new Caixote(point));
-				break;
-			case 'E':
-				movableList.add(new Empilhadora(point));
-				gameElementsList.add(new Chao(point));
-				bobcat = new Empilhadora(point);
-				gameElementsList.add(bobcat);
-				break;
-			case 'T':
-				gameElementsList.add(new Teleporte(point));
-				gameElementsList.add(new Chao(point));
-				notMovableList.add(new Teleporte(point));
-				break;
-			case 'O':
-				gameElementsList.add(new Buraco(point));
-				notMovableList.add(new Buraco(point));
-				break;
-			case 'P':
-				gameElementsList.add(new Palete(point));
-				movableList.add(new Palete(point));
-				break;
-			case '%':
-				gameElementsList.add(new ParedeRachada(point));
-				notMovableList.add(new ParedeRachada(point));
-				break;
-			default:
-				break;
-		}
-	}
+
 
 	// Envio das mensagens para a GUI - note que isto so' precisa de ser feito no inicio
 	// Nao e' suposto re-enviar os objetos se a unica coisa que muda sao as posicoes  
 	private void sendImagesToGUI() {
-		for (ImageTile img : gameElementsList) {
-			gui.addImage(img);
+
+		gui.addImage(bobcat);
+
+		for( Collidable collidable : CollidableList){
+			gui.addImage(collidable);
+		}
+
+		for( NotCollidable notCollidable : NotCollidableList){
+			gui.addImage(notCollidable);
+		}
+
+		for( Item item : ItemList){
+			gui.addImage(item);
 		}
 	}
 }

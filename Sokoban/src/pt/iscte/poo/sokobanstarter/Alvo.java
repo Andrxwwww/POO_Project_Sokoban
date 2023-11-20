@@ -1,17 +1,12 @@
 package pt.iscte.poo.sokobanstarter;
 import pt.iscte.poo.utils.Point2D;
 
-public class Alvo extends NotMovable {
+public class Alvo extends NotCollidable {
 
     private Point2D Point2D;
 
-    public Alvo(Point2D Point2D) {
-        this.Point2D = Point2D;
-    }
-
-    @Override
-    public boolean doesElapse() {
-        return false;
+    public Alvo(Point2D point2d) {
+        this.Point2D = point2d;
     }
 
     @Override
