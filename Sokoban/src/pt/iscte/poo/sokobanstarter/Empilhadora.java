@@ -8,7 +8,9 @@ public class Empilhadora extends GameElement{
 	private Point2D position;
 	private String imageName;
 	private int Battery;
+
 	private final int FULL_BATTERY = 100;
+	private final int FIRST_LEVEL = 0;
 	
 	public Empilhadora(Point2D initialPosition){
 		this.position = initialPosition;
@@ -87,8 +89,8 @@ public class Empilhadora extends GameElement{
 			position = newPosition;
 			Battery--;
 			if( Battery == 0 ) {
-				GameEngine.getInstance().infoBox("You ran out of battery :(", "Click ENTER for restart");
-				GameEngine.getInstance().restartGame();
+				GameEngine.getInstance().infoBox("You ran out of battery :(", "Click SPACE for restart");
+				GameEngine.getInstance().restartGame(FIRST_LEVEL);
 			}
 		}
 	}

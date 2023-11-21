@@ -38,5 +38,5 @@ public class Parede extends Collidable {
     public Point2D nextPosition(int key) {
         return position;
     }
-    
+
 }

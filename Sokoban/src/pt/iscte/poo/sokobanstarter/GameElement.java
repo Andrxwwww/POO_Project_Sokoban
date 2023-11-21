@@ -15,7 +15,7 @@ public abstract class GameElement implements ImageTile {
             case 'X':
                 return new Alvo(position);
             case 'C':
-                return new Caixote(position);
+                return new Caixote(position,true);
             case 'P':
                 return new Palete(position);
             case 'E':

@@ -6,9 +6,11 @@ import pt.iscte.poo.utils.Point2D;
 public class Caixote extends Collidable{
 
 	private Point2D position;
+	private boolean movable;
 	
-	public Caixote(Point2D position){
+	public Caixote(Point2D position  , boolean movable){
 		this.position = position;
+		this.movable = movable;
 	}
 	
 	@Override
@@ -32,10 +34,13 @@ public class Caixote extends Collidable{
 	}
 
 	public boolean isMovable() {
-		return true;
+		return movable;
 	}
 
 
+	public void setIfIsMovable(boolean movable) {
+		this.movable = movable;
+	}
 
 
 	public Point2D nextPosition(int key) {
