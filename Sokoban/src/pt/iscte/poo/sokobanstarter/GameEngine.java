@@ -10,6 +10,7 @@ import java.util.Vector;
 import java.io.File;
 import java.io.FileNotFoundException;
 import javax.swing.JOptionPane;
+import java.util.Iterator;
 
 import pt.iscte.poo.gui.ImageMatrixGUI;
 import pt.iscte.poo.gui.ImageTile;
@@ -198,11 +199,14 @@ public class GameEngine implements Observer {
 		return true;
 	}
 
-	public void pickUpBattery(){
-		for (Item item : ItemList) {
+	public void pickUpBattery() {
+		Iterator<Item> iterator = ItemList.iterator();
+		while (iterator.hasNext()) {
+			Item item = iterator.next();
 			if (item instanceof Bateria) {
-				if( item.getPosition().equals(bobcat.getPosition())){
+				if (item.getPosition().equals(bobcat.getPosition())) {
 					bobcat.addBattery(BATTERY_RELOAD);
+					iterator.remove();  
 					gui.removeImage(item);
 				}
 			}

@@ -8,11 +8,12 @@ public class Empilhadora extends GameElement{
 	private Point2D position;
 	private String imageName;
 	private int Battery;
+	private final int FULL_BATTERY = 100;
 	
 	public Empilhadora(Point2D initialPosition){
 		this.position = initialPosition;
 		this.imageName = "Empilhadora_D";
-		this.Battery = 5;
+		this.Battery = FULL_BATTERY;
 	}
 	
 	public Point2D nextPosition(int key) {
@@ -50,8 +51,8 @@ public class Empilhadora extends GameElement{
 
 	public int addBattery(int sumBattery) {
 		this.Battery += sumBattery;
-		if (Battery > 100) {
-			Battery = 100;
+		if (Battery > FULL_BATTERY) {
+			Battery = FULL_BATTERY;
 		}
 		return Battery;
 	}
