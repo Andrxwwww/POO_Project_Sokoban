@@ -15,7 +15,5 @@ public interface CollidableInterface {
     public boolean isMovable();
 
     public Point2D nextPosition(int key);
-
-    public int collidableLevel();
     
 }

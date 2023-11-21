@@ -1,5 +1,6 @@
 package pt.iscte.poo.sokobanstarter;
 
+import java.awt.Point;
 import java.awt.RenderingHints.Key;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -48,7 +49,6 @@ public class GameEngine implements Observer {
 	private List<NotCollidable> NotCollidableList;	// Lista de imagens
 	private List<Collidable> CollidableList;	// Lista de imagens
 	private List<Item> ItemList;	// Lista de imagens
-	private HashMap<Point2D, Collidable> CollidableLoc;	// Lista de imagens
 	private Empilhadora bobcat;	        // Referencia para a empilhadora
 	private int level_num;	// Numero do nivel a carregar
 
@@ -61,7 +61,6 @@ public class GameEngine implements Observer {
 		NotCollidableList = new ArrayList<>();
 		CollidableList = new ArrayList<>();
 		ItemList = new ArrayList<>();
-		CollidableLoc = new HashMap<>();
 	}
 
 	// Implementacao do singleton para o GameEngine
@@ -82,7 +81,7 @@ public class GameEngine implements Observer {
 		gui.registerObserver(this);            // 3. registar o objeto ativo GameEngine como observador da GUI
 		gui.go();                              // 4. lancar a GUI
 
-		this.level_num = 6;
+		this.level_num = 2;
 		createLevel(level_num);      // criar o armazem
 		sendImagesToGUI();      // enviar as imagens para a GUI
 
@@ -120,13 +119,15 @@ public class GameEngine implements Observer {
 	}
 
 	public void restartGame(){
-		gui.clearImages();
+		gui.clearImages(); // apaga todas as imagens atuais da GUI
+		//apaga o conteudo das listas
 		gameElementsList.clear();
 		NotCollidableList.clear();
 		CollidableList.clear();
 		ItemList.clear();
-		CollidableLoc.clear();
-		level_num = 1;
+
+		//reecria o primeiro nivel
+		level_num = 2;
 		createLevel(level_num);      
 		sendImagesToGUI();
 	}
@@ -145,8 +146,8 @@ public class GameEngine implements Observer {
 					for (int y=0; y<GRID_HEIGHT; y++){ //loop pela altura da Tela
 					String line = scanner.nextLine(); // meter a string/linha numa var
 						for(int x = 0; x < line.length(); x++){// loop pela a length da palavra que vai acabar por ser a largura da tela tambem
-							GameElement gameElement = GameElement.create(line.charAt(x), new Point2D(x,y));// verifica qual é o char correspondente e ,mete na tela ( isso e na outra func a baixo )
-							whatIsGameElement(gameElement);
+							GameElement gameElement = GameElement.create(line.charAt(x), new Point2D(x,y)); // criar o gameElement
+							whatIsGameElement(gameElement); // adicionar a lista correspondente
 						}
 					}
 			}
@@ -157,23 +158,23 @@ public class GameEngine implements Observer {
 		gui.update();	
 	}
 
+	// funcao que dado um gameElement ele vai adicionar a lista correspondente (tinha-se de fazer com gameElements é o porquê de ter feito asssim)
 	private void whatIsGameElement(GameElement gameElement){
 		if( gameElement instanceof Parede || gameElement instanceof Caixote || gameElement instanceof Palete || gameElement instanceof ParedeRachada){
 			gameElementsList.add(gameElement);
 			CollidableList.add( (Collidable) gameElement);
-			CollidableLoc.put(gameElement.getPosition(), (Collidable) gameElement);
 			NotCollidableList.add( (NotCollidable) GameElement.create(' ', gameElement.getPosition()));
 		} else if ( gameElement instanceof Chao || gameElement instanceof Alvo || gameElement instanceof Buraco || gameElement instanceof Teleporte || gameElement instanceof Vazio){
 			gameElementsList.add(gameElement);
 			NotCollidableList.add( (NotCollidable) gameElement);
 		} else if ( gameElement instanceof Empilhadora){
-			NotCollidableList.add( (NotCollidable) GameElement.create(' ', gameElement.getPosition()) );
+			NotCollidableList.add( (NotCollidable) GameElement.create(' ', gameElement.getPosition()) ); // adicionar um chao por baixo da empilhadora
 			gameElementsList.add(gameElement);
 			bobcat = (Empilhadora) gameElement;
 		} else if ( gameElement instanceof Bateria || gameElement instanceof Martelo){
 			ItemList.add( (Item) gameElement);
 			gameElementsList.add(gameElement);
-			NotCollidableList.add( (NotCollidable) GameElement.create(' ', gameElement.getPosition()));
+			NotCollidableList.add( (NotCollidable) GameElement.create(' ', gameElement.getPosition())); // adicionar um chao por baixo do item
 		}
 	}
 
@@ -181,17 +182,27 @@ public class GameEngine implements Observer {
 
 		if (bobcatHitWallChecker()) {
 			bobcat.movePosition(Direction.directionFor(key));
-			System.out.println(bobcat.getBattery());
+			System.out.println(bobcat.getBattery()); // debug para ver a bateria se está correta
 		}
 	}
 
 	private boolean bobcatHitWallChecker(){
 
 		for (Collidable collidable : CollidableList) {
-			if (collidable instanceof Parede) {
-				if( collidable.getPosition().equals(bobcat.nextPosition(gui.keyPressed()))){
+			Point2D nextPosition = bobcat.nextPosition(gui.keyPressed()); // guarda numa variavel a proxima posicao da empilhadora
+			if (collidable.getPosition().equals(nextPosition)) { // se a proxima posicao da empilhadora for igual a posicao de um collidable
+				if (collidable.isMovable()) { // e se esse collidable for movable (caixote OU palete)
+					if (CollidableChecker(collidable)) { // chama uma funcao onde vai checkar se esse collidable pode ir contra a parede ou contra outro collidable 
+						bobcat.move(gui.keyPressed()); // ssó para mudar de foto quando bate na parede ou no movable
+						return false; // entao a empilhadora nao passa
+					}
+					collidable.movePosition(Direction.directionFor(gui.keyPressed())); // move o collidable [ por outras palavras a empilhadora move o caixote ou a palete]
 					bobcat.move(gui.keyPressed());
-					return false;
+					bobcat.addBattery(-1); // retira 1 de bateria que por sua vez no total tira -2 de bateria [ -1 por mover a empilhadora e -1 por mover o caixote ou a palete]
+					return true; // entao a empilhadora passa
+				} else if (collidable.isAWall()) { // ou se esse collidable for uma Parede ou ParedeRachada [ mais tarde com o martelo depois muda-se o isAWall() = false ]
+					bobcat.move(gui.keyPressed());
+					return false; // entao a empilhadora nao passa
 				}
 			}
 		}
@@ -199,7 +210,21 @@ public class GameEngine implements Observer {
 		return true;
 	}
 
+	private boolean CollidableChecker(Collidable c){
+		for (Collidable collidableInList : CollidableList) { // loop por todos os collidables
+			if (collidableInList.isMovable() || collidableInList.isAWall()){ // se o collidable for movable ou for uma parede
+				if (c.nextPosition(gui.keyPressed()).equals(collidableInList.getPosition())) { // se o collidable que está a ser movido for contra outro collidable ou parede
+					return true; // entao esse collidable nao passa tal como a empilhadora que nao passa tambem
+				}
+			}
+		}
+		return false;
+	}
+
+
+
 	public void pickUpBattery() {
+		// usou se iterator porque dava java.util.ConcurrentModificationException ao remover [ pt nao sei pq é que usei iterator :) mas funciona]
 		Iterator<Item> iterator = ItemList.iterator();
 		while (iterator.hasNext()) {
 			Item item = iterator.next();

@@ -3,16 +3,11 @@ import pt.iscte.poo.utils.Point2D;
 
 public class Parede extends Collidable {
 
-    private Point2D Point2D;
-
-    public Parede(Point2D Point2D) {
-        this.Point2D = Point2D;
-    }
-
-    @Override
-    public boolean isAWall() {
-        return true;
-    }
+	private Point2D position;
+	
+	public Parede(Point2D position){
+		this.position = position;
+	}
 
     @Override
     public boolean isMovable() {
@@ -25,24 +20,23 @@ public class Parede extends Collidable {
     }
 
     @Override
-    public Point2D getPosition() {
-        return Point2D;
-    }
-
-    @Override
     public int getLayer() {
         return 3;
     }
 
+	@Override
+	public boolean isAWall() {
+		return true;
+	}
+
     @Override
-    public int collidableLevel() {
-        return 3;
+    public Point2D getPosition() {
+        return position;
     }
 
     @Override
     public Point2D nextPosition(int key) {
-        return Point2D;
+        return position;
     }
-
     
 }

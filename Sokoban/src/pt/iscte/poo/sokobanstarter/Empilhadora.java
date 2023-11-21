@@ -86,7 +86,7 @@ public class Empilhadora extends GameElement{
 		if (newPosition.getX()>=0 && newPosition.getX()<10 && newPosition.getY()>=0 && newPosition.getY()<10 ){
 			position = newPosition;
 			Battery--;
-			if( Battery == 0) {
+			if( Battery == 0 ) {
 				GameEngine.getInstance().infoBox("You ran out of battery :(", "Click ENTER for restart");
 				GameEngine.getInstance().restartGame();
 			}

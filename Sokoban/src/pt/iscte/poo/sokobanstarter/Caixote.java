@@ -7,8 +7,8 @@ public class Caixote extends Collidable{
 
 	private Point2D position;
 	
-	public Caixote(Point2D point2d){
-		this.position = point2d;
+	public Caixote(Point2D position){
+		this.position = position;
 	}
 	
 	@Override
@@ -18,7 +18,7 @@ public class Caixote extends Collidable{
 
 	@Override
 	public Point2D getPosition() {
-		return position;
+		return this.position;
 	}
 
 	@Override
@@ -27,10 +27,6 @@ public class Caixote extends Collidable{
 	}
 
 	@Override
-	public int collidableLevel() {
-		return 2;
-	}
-
 	public boolean isAWall() {
 		return false;
 	}
@@ -38,6 +34,9 @@ public class Caixote extends Collidable{
 	public boolean isMovable() {
 		return true;
 	}
+
+
+
 
 	public Point2D nextPosition(int key) {
 		Direction direction = Direction.directionFor(key);

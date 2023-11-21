@@ -7,8 +7,8 @@ public class Palete extends Collidable{
 
 	private Point2D position;
 	
-	public Palete(Point2D initialPosition){
-		position = initialPosition;
+	public Palete(Point2D position){
+		this.position = position;
 	}
 
 	@Override
@@ -27,18 +27,13 @@ public class Palete extends Collidable{
 	}
 
 	@Override
-	public boolean isAWall() {
-		return false;
-	}
-
-	@Override
 	public boolean isMovable() {
 		return true;
 	}
 
 	@Override
-	public int collidableLevel() {
-		return 2;
+	public boolean isAWall() {
+		return false;
 	}
 
 	public void moveToPoint(Point2D point) {

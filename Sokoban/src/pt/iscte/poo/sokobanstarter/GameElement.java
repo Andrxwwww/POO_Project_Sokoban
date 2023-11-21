@@ -27,7 +27,7 @@ public abstract class GameElement implements ImageTile {
             case '=':
                 return new Vazio(position);
             case '%':
-                return new ParedeRachada(position);
+                return new ParedeRachada(position,true); // mais tarde ira ser posto a false quando se implementar o martelo
             case 'B':
                 return new Bateria(position);
             case 'M':
