@@ -12,7 +12,7 @@ public class Empilhadora extends GameElement{
 	public Empilhadora(Point2D initialPosition){
 		this.position = initialPosition;
 		this.imageName = "Empilhadora_D";
-		this.Battery = 100;
+		this.Battery = 5;
 	}
 	
 	public Point2D nextPosition(int key) {
@@ -86,7 +86,8 @@ public class Empilhadora extends GameElement{
 			position = newPosition;
 			Battery--;
 			if( Battery == 0) {
-				//TODO
+				GameEngine.getInstance().infoBox("You ran out of battery :(", "Click ENTER for restart");
+				GameEngine.getInstance().restartGame();
 			}
 		}
 	}

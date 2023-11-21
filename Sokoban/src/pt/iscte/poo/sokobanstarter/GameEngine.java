@@ -9,6 +9,7 @@ import java.util.Scanner;
 import java.util.Vector;
 import java.io.File;
 import java.io.FileNotFoundException;
+import javax.swing.JOptionPane;
 
 import pt.iscte.poo.gui.ImageMatrixGUI;
 import pt.iscte.poo.gui.ImageTile;
@@ -50,6 +51,8 @@ public class GameEngine implements Observer {
 	private Empilhadora bobcat;	        // Referencia para a empilhadora
 	private int level_num;	// Numero do nivel a carregar
 
+	private final int BATTERY_RELOAD = 50;
+
 
 	// Construtor - neste exemplo apenas inicializa uma lista de ImageTiles
 	private GameEngine() {
@@ -78,9 +81,8 @@ public class GameEngine implements Observer {
 		gui.registerObserver(this);            // 3. registar o objeto ativo GameEngine como observador da GUI
 		gui.go();                              // 4. lancar a GUI
 
-		this.level_num = 3;
+		this.level_num = 6;
 		createLevel(level_num);      // criar o armazem
-		pickUpBattery();
 		sendImagesToGUI();      // enviar as imagens para a GUI
 
 
@@ -93,14 +95,46 @@ public class GameEngine implements Observer {
 	@Override
 	public void update(Observed source) {
 		int key = gui.keyPressed();    // obtem o codigo da tecla pressionada
-		
-		bobcatKeyMechanics(key);
-			
+
+		otherKeyInteractions(key);
+		if (bobcat != null && KeyChecker(key)) {
+			bobcatKeyMechanics(key);
+		}
+		pickUpBattery();
+
 		gui.update();                  // redesenha a lista de ImageTiles na GUI, tendo em conta as novas posicoes dos objetos
 	}
 
 
 	// Criacao da planta do armazem - so' chao neste exemplo 
+	public boolean KeyChecker(int key){
+		if (key == KeyEvent.VK_UP || key == KeyEvent.VK_DOWN || key == KeyEvent.VK_LEFT || key == KeyEvent.VK_RIGHT) {
+			return true;
+		}
+		return false;
+	}
+
+	public void infoBox(String infoMessage, String titleBar){
+		JOptionPane.showMessageDialog(null, infoMessage, titleBar, javax.swing.JOptionPane.INFORMATION_MESSAGE);
+	}
+
+	public void restartGame(){
+		gui.clearImages();
+		gameElementsList.clear();
+		NotCollidableList.clear();
+		CollidableList.clear();
+		ItemList.clear();
+		CollidableLoc.clear();
+		level_num = 1;
+		createLevel(level_num);      
+		sendImagesToGUI();
+	}
+
+	public void otherKeyInteractions(int key){
+		if (key == KeyEvent.VK_ENTER) {
+			restartGame();
+		}
+	}
 	
 
 	private void createLevel(int level_num) {
@@ -146,6 +180,7 @@ public class GameEngine implements Observer {
 
 		if (bobcatHitWallChecker()) {
 			bobcat.movePosition(Direction.directionFor(key));
+			System.out.println(bobcat.getBattery());
 		}
 	}
 
@@ -167,8 +202,7 @@ public class GameEngine implements Observer {
 		for (Item item : ItemList) {
 			if (item instanceof Bateria) {
 				if( item.getPosition().equals(bobcat.getPosition())){
-					bobcat.addBattery(2);
-					ItemList.remove(item);
+					bobcat.addBattery(BATTERY_RELOAD);
 					gui.removeImage(item);
 				}
 			}
