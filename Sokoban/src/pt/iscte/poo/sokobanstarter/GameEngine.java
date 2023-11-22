@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 
 import javax.swing.JOptionPane;
-import javax.swing.text.Position;
 
 import java.util.Iterator;
 
@@ -50,7 +49,7 @@ public class GameEngine implements Observer {
 	private int numberOfTargetsWithBoxes; // Numero de alvos
 
 	private final int BATTERY_RELOAD = 50;
-	private final int FIRST_LEVEL = 6;
+	private final int FIRST_LEVEL = 3;
 
 	// Construtor - neste exemplo apenas inicializa uma lista de ImageTiles
 	private GameEngine() {
@@ -191,7 +190,7 @@ public class GameEngine implements Observer {
 			bobcat.movePosition(Direction.directionFor(key));
 			//System.out.println(bobcat.getBattery()); // debug para ver a bateria se estácorreta
 			//System.out.println( "Numero total de Targets: " + getTargetCount()); // debug para ver o numero de alvos
-			//System.out.println( "Numero de Caixotes nos alvos: " + numberOfTargetsWithBoxes); // debug para ver o numero de alvos com caixotes
+			System.out.println( "Numero de Caixotes nos alvos: " + numberOfTargetsWithBoxes); // debug para ver o numero de alvos com caixotes
 		} else {
 			bobcat.move(key);
 		}
@@ -205,17 +204,17 @@ public class GameEngine implements Observer {
 			if (bobcat.nextPosition(gui.keyPressed()).equals(collidable.getPosition())) { // se a proxima posicao da empilhadora for igual a posicao de um collidable
 				if (collidable.isMovable()) { // e se esse collidable for movable (caixote OU palete)
 
-					if (CollidableAboveAlvo(collidable) && collidable instanceof Caixote){
+					if (collidableAboveAlvo(collidable) && collidable instanceof Caixote){
 						numberOfTargetsWithBoxes++;
 					} else {
 						if ( numberOfTargetsWithBoxes > 0 && numberOfTargetsWithBoxes <= getTargetCount() 
-						&& isCollidableAboveAlvoAtPosition(collidable.getPosition())) {
+						&& isCollidableAboveAlvoAtPosition(collidable.getPosition()) && !collidableChecker(collidable)) {
 							numberOfTargetsWithBoxes--;
 						}
 					}
-					//System.out.println( "Posicao do Caixote: " + collidable.getPosition()); //debug
+					System.out.println( "Posicao do Caixote: " + collidable.getPosition()); //debug
 
-					if (CollidableChecker(collidable)) { // chama uma funcao onde vai checkar se esse collidable pode ir contra a parede ou contra outro collidable
+					if (collidableChecker(collidable)) { // chama uma funcao onde vai checkar se esse collidable pode ir contra a parede ou contra outro collidable
 						return false; // entao a empilhadora nao passa
 					} else {
 						// move a empuilhadora + o collidable [ caixote ou palete ]
@@ -233,7 +232,7 @@ public class GameEngine implements Observer {
 	}
 
 	// funcao que checka se o collidable pode ir contra a parede ou contra outro collidable [ caixote ou palete ou paredeRachada ]
-	private boolean CollidableChecker(Collidable c) {
+	private boolean collidableChecker(Collidable c) {
 			for (Collidable collidableInList : CollidableList) { // loop por todos os collidables
 				if (collidableInList.isMovable() || collidableInList.isAWall() ) { // se o collidable for movable ou for uma parede
 					if (c.nextPosition(gui.keyPressed()).equals(collidableInList.getPosition())) { // se o collidable que está a ser movido for contra outro collidable ou parede
@@ -245,14 +244,15 @@ public class GameEngine implements Observer {
 	}
 
 	// funcao que checka se existe um alvo na posicao do collidable
-	private boolean CollidableAboveAlvo(Collidable c) {
+	private boolean collidableAboveAlvo(Collidable c) {
+		if (c instanceof Caixote){
 		for (NotCollidable notCollidable : NotCollidableList) {
-			if (notCollidable instanceof Alvo) {
-				// System.out.println("Posicao do Alvo: " + notCollidable.getPosition()); //debug
-				if (c.nextPosition(gui.keyPressed()).equals(notCollidable.getPosition())) {
+			if (notCollidable instanceof Alvo ) {
+				if (c.nextPosition(gui.keyPressed()).equals(notCollidable.getPosition()) && !isPalletAtPosition(c.nextPosition(gui.keyPressed()))) {
 					return true;
 				}
 			}
+		}
 		}
 		return false;
 	}	
@@ -260,15 +260,21 @@ public class GameEngine implements Observer {
 	// funcao que checka se existe um alvo na posicao do collidable
 	private boolean isCollidableAboveAlvoAtPosition(Point2D position) {
 		for (NotCollidable notCollidable : NotCollidableList) {
-			if (notCollidable instanceof Alvo) {
-				if (position.equals(notCollidable.getPosition())) {
-					return true;
-				}
+			if (position.equals(notCollidable.getPosition()) && notCollidable instanceof Alvo) {
+				return true;
 			}
 		}
 		return false;
 	}
 
+	private boolean isPalletAtPosition(Point2D position) {
+		for (Collidable collidable : CollidableList) {
+			if (collidable instanceof Palete && collidable.getPosition().equals(position)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	private int getTargetCount() {
 		int num_targets = 0;
