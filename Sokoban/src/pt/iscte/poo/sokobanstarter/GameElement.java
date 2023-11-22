@@ -13,7 +13,7 @@ public abstract class GameElement implements ImageTile {
             case 'O':
                 return new Buraco(position);
             case 'X':
-                return new Alvo(position);
+                return new Alvo(position,false);
             case 'C':
                 return new Caixote(position,true);
             case 'P':

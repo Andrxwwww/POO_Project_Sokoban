@@ -8,6 +8,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 
 import javax.swing.JOptionPane;
+import javax.swing.text.Position;
+
 import java.util.Iterator;
 
 import pt.iscte.poo.gui.ImageMatrixGUI;
@@ -48,7 +50,7 @@ public class GameEngine implements Observer {
 	private int numberOfTargetsWithBoxes; // Numero de alvos
 
 	private final int BATTERY_RELOAD = 50;
-	private final int FIRST_LEVEL = 0;
+	private final int FIRST_LEVEL = 6;
 
 	// Construtor - neste exemplo apenas inicializa uma lista de ImageTiles
 	private GameEngine() {
@@ -95,26 +97,34 @@ public class GameEngine implements Observer {
 		int key = gui.keyPressed(); // obtem o codigo da tecla pressionada
 
 		otherKeyInteractions(key);
-		if (bobcat != null && KeyChecker(key)) {
+		if (bobcat != null && Direction.isDirection(key)) {
 			bobcatKeyMechanics(key);
+			pickUpBattery();
+			winGame();
 		}
-		pickUpBattery();
-		WinGame();
 
-		gui.update(); // redesenha a lista de ImageTiles na GUI, tendo em conta as novas posicoes dos
-						// objetos
+		gui.update(); // redesenha a lista de ImageTiles na GUI, tendo em conta as novas posicoes dos objetos
 	}
 
-	// Criacao da planta do armazem - so' chao neste exemplo
-	public boolean KeyChecker(int key) {
-		if (key == KeyEvent.VK_UP || key == KeyEvent.VK_DOWN || key == KeyEvent.VK_LEFT || key == KeyEvent.VK_RIGHT) {
-			return true;
+	// --- FUNCTIONS FOR KEYS ---
+	// outras funcoes das keys
+	public void otherKeyInteractions(int key) {
+		if (key == KeyEvent.VK_SPACE) {
+			restartGame(FIRST_LEVEL);
 		}
-		return false;
 	}
 
 	public void infoBox(String infoMessage, String titleBar) {
 		JOptionPane.showMessageDialog(null, infoMessage, titleBar, javax.swing.JOptionPane.INFORMATION_MESSAGE);
+	}
+
+	//---- GAME MECHANICS ----
+	private void winGame() {
+		if (numberOfTargetsWithBoxes == getTargetCount()) {
+			infoBox("You Win!", "Congratulations");
+			this.level_num++;
+			restartGame(this.level_num++);
+		}
 	}
 
 	public void restartGame(int level_num) {
@@ -131,12 +141,7 @@ public class GameEngine implements Observer {
 		sendImagesToGUI();
 	}
 
-	public void otherKeyInteractions(int key) {
-		if (key == KeyEvent.VK_SPACE) {
-			restartGame(FIRST_LEVEL);
-		}
-	}
-
+	// funcao que cria o nivel
 	private void createLevel(int level_num) {
 		try {
 			Scanner scanner = new Scanner(new File("levels\\level" + level_num + ".txt"));
@@ -184,29 +189,36 @@ public class GameEngine implements Observer {
 		if (bobcatCollisionsChecker()) {
 			bobcat.move(gui.keyPressed());
 			bobcat.movePosition(Direction.directionFor(key));
-			// System.out.println(bobcat.getBattery()); // debug para ver a bateria se estácorreta
-			System.out.println( "Numero total de Targets: " + getTargetCount()); // debug para ver o numero de alvos
-			System.out.println( "Numero de Caixotes nos alvos: " + numberOfTargetsWithBoxes); // debug para ver o numero de alvos com caixotes
+			//System.out.println(bobcat.getBattery()); // debug para ver a bateria se estácorreta
+			//System.out.println( "Numero total de Targets: " + getTargetCount()); // debug para ver o numero de alvos
+			//System.out.println( "Numero de Caixotes nos alvos: " + numberOfTargetsWithBoxes); // debug para ver o numero de alvos com caixotes
 		} else {
 			bobcat.move(key);
 		}
 	}
 
+	/* funcao que checka se a empilhadora pode passar ou nao 
+	[ se for um caixote ou uma palete entao move o caixote ou a palete + a empilhadora 
+	, se for parede ou paredeRachada entao nao passa ] */
 	private boolean bobcatCollisionsChecker() {
 		for (Collidable collidable : CollidableList) {
 			if (bobcat.nextPosition(gui.keyPressed()).equals(collidable.getPosition())) { // se a proxima posicao da empilhadora for igual a posicao de um collidable
 				if (collidable.isMovable()) { // e se esse collidable for movable (caixote OU palete)
 
-					if (BoxAboveTarget(collidable)) { 
+					if (CollidableAboveAlvo(collidable) && collidable instanceof Caixote){
 						numberOfTargetsWithBoxes++;
-					} else if ( numberOfTargetsWithBoxes > 0 && numberOfTargetsWithBoxes <= getTargetCount()
-					 && !BoxAboveTarget(collidable) && collidable instanceof Caixote) { //@TODO
-						numberOfTargetsWithBoxes--;
+					} else {
+						if ( numberOfTargetsWithBoxes > 0 && numberOfTargetsWithBoxes <= getTargetCount() 
+						&& isCollidableAboveAlvoAtPosition(collidable.getPosition())) {
+							numberOfTargetsWithBoxes--;
+						}
 					}
+					//System.out.println( "Posicao do Caixote: " + collidable.getPosition()); //debug
 
 					if (CollidableChecker(collidable)) { // chama uma funcao onde vai checkar se esse collidable pode ir contra a parede ou contra outro collidable
 						return false; // entao a empilhadora nao passa
 					} else {
+						// move a empuilhadora + o collidable [ caixote ou palete ]
 						collidable.movePosition(Direction.directionFor(gui.keyPressed())); /* move o collidable [ por outras palavras a empilhadora move o caixote ou a palete] */
 						bobcat.addBattery(-1); // retira 1 de bateria que por sua vez no total tira -2 de bateria [ -1 por mover a empilhadora e -1 por mover o caixote ou a palete]
 						return true; // entao a empilhadora passa
@@ -220,6 +232,7 @@ public class GameEngine implements Observer {
 		return true;
 	}
 
+	// funcao que checka se o collidable pode ir contra a parede ou contra outro collidable [ caixote ou palete ou paredeRachada ]
 	private boolean CollidableChecker(Collidable c) {
 			for (Collidable collidableInList : CollidableList) { // loop por todos os collidables
 				if (collidableInList.isMovable() || collidableInList.isAWall() ) { // se o collidable for movable ou for uma parede
@@ -231,7 +244,33 @@ public class GameEngine implements Observer {
 		return false;
 	}
 
-	private int getTargetCount() { //@TODO
+	// funcao que checka se existe um alvo na posicao do collidable
+	private boolean CollidableAboveAlvo(Collidable c) {
+		for (NotCollidable notCollidable : NotCollidableList) {
+			if (notCollidable instanceof Alvo) {
+				// System.out.println("Posicao do Alvo: " + notCollidable.getPosition()); //debug
+				if (c.nextPosition(gui.keyPressed()).equals(notCollidable.getPosition())) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}	
+
+	// funcao que checka se existe um alvo na posicao do collidable
+	private boolean isCollidableAboveAlvoAtPosition(Point2D position) {
+		for (NotCollidable notCollidable : NotCollidableList) {
+			if (notCollidable instanceof Alvo) {
+				if (position.equals(notCollidable.getPosition())) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+
+	private int getTargetCount() {
 		int num_targets = 0;
 		for (NotCollidable notCollidable : NotCollidableList) {
 			if (notCollidable instanceof Alvo) {
@@ -241,32 +280,9 @@ public class GameEngine implements Observer {
 		return num_targets;
 	}
 
-	private boolean BoxAboveTarget(Collidable c) { //@TODO
-		for (NotCollidable notCollidable : NotCollidableList) {
-			if (notCollidable instanceof Alvo && c instanceof Caixote) {
-				if (c.nextPosition(gui.keyPressed()).equals(notCollidable.getPosition())) {
-					return true;
-				} else if (c.getPosition().equals(notCollidable.getPosition())) {
-					return false;
-				}
-			}
-		}
-		return false;
-	}
-
-	private void WinGame() {
-
-		if (numberOfTargetsWithBoxes == getTargetCount()) {
-			infoBox("You Win!", "Congratulations");
-			this.level_num++;
-			restartGame(this.level_num++);
-		}
-
-	}
-
+	// ---- ITEMS FUNCTS ----
 	public void pickUpBattery() {
-		// usou se iterator porque dava java.util.ConcurrentModificationException ao
-		// remover [ pt nao sei pq é que usei iterator :) mas funciona]
+		// usou se iterator porque dava java.util.ConcurrentModificationException ao remover [ pt nao sei pq é que usei iterator :) mas funciona]
 		Iterator<Item> iterator = ItemList.iterator();
 		while (iterator.hasNext()) {
 			Item item = iterator.next();
