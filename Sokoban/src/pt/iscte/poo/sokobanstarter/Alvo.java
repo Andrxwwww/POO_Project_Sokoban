@@ -1,14 +1,11 @@
 package pt.iscte.poo.sokobanstarter;
 import pt.iscte.poo.utils.Point2D;
 
-public class Alvo extends NotCollidable {
+public class Alvo extends GameElement{
 
-    private Point2D Point2D;
-    private boolean rightSpot;
 
-    public Alvo(Point2D point2d , boolean rightSpot) {
-        this.Point2D = point2d;
-        this.rightSpot = rightSpot;
+    public Alvo(Point2D position) {
+        super(position);
     }
 
     @Override
@@ -17,22 +14,8 @@ public class Alvo extends NotCollidable {
     }
 
     @Override
-    public Point2D getPosition() {
-        return Point2D;
-    }
-
-    @Override
     public int getLayer() {
         return 1;
     }
 
-    public boolean getRightSpot() {
-        return rightSpot;
-    }
-
-    public void setRightSpot(boolean rightSpot) {
-        this.rightSpot = rightSpot;
-    }
-
-    
 }

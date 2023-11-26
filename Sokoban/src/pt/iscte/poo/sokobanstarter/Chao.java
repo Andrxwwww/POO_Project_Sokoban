@@ -1,15 +1,11 @@
 package pt.iscte.poo.sokobanstarter;
 import pt.iscte.poo.utils.Point2D;
 
-public class Chao extends NotCollidable {
+public class Chao extends GameElement {
 
-    private Point2D Point2D;
-
-    public Chao(Point2D Point2D) {
-        this.Point2D = Point2D;
+    public Chao(Point2D position) {
+        super(position);
     }
-
-    
 
     @Override
     public String getName() {
@@ -17,13 +13,8 @@ public class Chao extends NotCollidable {
     }
 
     @Override
-    public Point2D getPosition() {
-        return Point2D;
-    }
-
-    @Override
     public int getLayer() {
         return 0;
     }
-    
+
 }

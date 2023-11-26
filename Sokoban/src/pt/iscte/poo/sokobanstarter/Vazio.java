@@ -1,12 +1,10 @@
 package pt.iscte.poo.sokobanstarter;
 import pt.iscte.poo.utils.Point2D;
 
-public class Vazio extends NotCollidable {
+public class Vazio extends GameElement {
 
-    private Point2D Point2D;
-
-    public Vazio(Point2D Point2D) {
-        this.Point2D = Point2D;
+    public Vazio(Point2D position) {
+        super(position);
     }
 
     @Override
@@ -15,12 +13,8 @@ public class Vazio extends NotCollidable {
     }
 
     @Override
-    public Point2D getPosition() {
-        return Point2D;
-    }
-
-    @Override
     public int getLayer() {
         return 0;
     }
+    
 }

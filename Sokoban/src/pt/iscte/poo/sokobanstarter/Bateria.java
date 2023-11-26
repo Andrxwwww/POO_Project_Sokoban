@@ -2,14 +2,11 @@ package pt.iscte.poo.sokobanstarter;
 
 import pt.iscte.poo.utils.Point2D;  
 
-public class Bateria extends Item{
-
-    private Point2D position;
+public class Bateria extends GameElement{
 
     public Bateria(Point2D position) {
-        this.position = position;
+        super(position);
     }
-
 
     @Override
     public String getName() {
@@ -21,9 +18,5 @@ public class Bateria extends Item{
         return 1;
     }
 
-    @Override
-    public Point2D getPosition() {
-        return position;
-    }
-    
+
 }

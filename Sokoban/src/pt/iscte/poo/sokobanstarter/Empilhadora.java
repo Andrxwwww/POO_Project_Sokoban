@@ -1,32 +1,30 @@
 package pt.iscte.poo.sokobanstarter;
 
+import java.util.Iterator;
+
 import pt.iscte.poo.utils.Direction;
 import pt.iscte.poo.utils.Point2D;
 
-public class Empilhadora extends GameElement{
+public class Empilhadora extends Movable{
 
-	private Point2D position;
 	private String imageName;
 	private int Battery;
+	private boolean setHammer;
 
+	private final int BATTERY_RELOAD = 50;
 	private final int FULL_BATTERY = 100;
-	private final int FIRST_LEVEL = 0;
+	GameEngine gameEngine = GameEngine.getInstance();
 	
-	public Empilhadora(Point2D initialPosition){
-		this.position = initialPosition;
-		this.imageName = "Empilhadora_D";
+	public Empilhadora(Point2D position){
+        super(position);
 		this.Battery = FULL_BATTERY;
-	}
-	
-	public Point2D nextPosition(int key) {
-		Direction direction = Direction.directionFor(key);
-		return position.plus(direction.asVector());
+		this.imageName = "Empilhadora_D";
+		this.setHammer = false;
 	}
 
 	public int getBattery() {
 		return Battery;
 	}
-
 
 	@Override
 	public String getName() {
@@ -34,21 +32,16 @@ public class Empilhadora extends GameElement{
 	}
 
 	@Override
-	public Point2D getPosition() {
-		return position;
-	}
-
-	@Override
 	public int getLayer() {
-		return 3;
+		return 4;
 	}
 
-	public int collidableLevel() {
-		return 3;
+	public boolean hasHammer() {
+		return setHammer;
 	}
 
-	public void moveToPoint(Point2D point) {
-		position = point;
+	public void setHammer(boolean setHammer) {
+		this.setHammer = setHammer;
 	}
 
 	public int addBattery(int sumBattery) {
@@ -59,8 +52,7 @@ public class Empilhadora extends GameElement{
 		return Battery;
 	}
 
-	//S1
-	// Move e muda a imagem segundo a direcao dada, se estiver dentro dos limites
+	// Muda a imagem segundo a direcao dada 
 	public void move(int key) {
 		Direction direction = Direction.directionFor(key);
 		switch (direction) {
@@ -82,17 +74,62 @@ public class Empilhadora extends GameElement{
 			break;
 		}
 	}
+
+	public boolean PosChecker(Point2D position) {
+		if (position.getX()>=0 && position.getX()<10 && position.getY()>=0 && position.getY()<10 ){
+			return true;
+		}
+		return false;
+	}
 	
-	public void movePosition(Direction direction) {
-		Point2D newPosition = position.plus(direction.asVector());
-		if (newPosition.getX()>=0 && newPosition.getX()<10 && newPosition.getY()>=0 && newPosition.getY()<10 ){
-			position = newPosition;
+	// Move a empilhadora para a direcao dada, se estiver dentro dos limites
+	public void driveTo(Direction direction) {
+		Point2D newPosition = getPosition().plus(direction.asVector());
+		if (PosChecker(newPosition)){
+			setPosition(newPosition);
 			Battery--;
 			if( Battery == 0 ) {
-				GameEngine.getInstance().infoBox("You ran out of battery :(", "Click SPACE for restart");
-				GameEngine.getInstance().restartGame(FIRST_LEVEL);
+				gameEngine.infoBox("Click SPACE for restart ", "You ran out of battery :(");
+				gameEngine.restartGame(gameEngine.level_num);
 			}
 		}
 	}
-	
+
+	public void interactWith(GameElement ge) {
+		if (ge instanceof Caixote || ge instanceof Palete) {
+			Point2D newPosition = ge.getPosition().plus(Direction.directionFor(gameEngine.getGui().keyPressed()).asVector());
+			if (PosChecker(newPosition)) {
+				ge.setPosition(newPosition);
+				Battery--;
+			}
+		}
+	}
+
+	public void pickUpBattery() {
+		Iterator<GameElement> iterator = gameEngine.getGameElementsList().iterator();
+		while (iterator.hasNext()) {
+			GameElement item = iterator.next();
+			if (item instanceof Bateria) {
+				if (item.getPosition().equals(this.getPosition())) {
+					this.addBattery(BATTERY_RELOAD);
+					iterator.remove();
+					gameEngine.getGui().removeImage(item);
+				}
+			}
+		}
+	}
+
+	public void pickUpHammer() {
+		Iterator<GameElement> iterator = GameEngine.getInstance().getGameElementsList().iterator();
+		while (iterator.hasNext()) {
+			GameElement item = iterator.next();
+			if (item instanceof Martelo) {
+				if (item.getPosition().equals(this.getPosition())) {
+					this.setHammer(true);
+					iterator.remove();
+					gameEngine.getGui().removeImage(item);
+				}
+			}
+		}
+	}
 }

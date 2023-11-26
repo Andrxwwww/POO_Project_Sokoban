@@ -1,19 +1,32 @@
 package pt.iscte.poo.sokobanstarter;
 
+import pt.iscte.poo.utils.Direction;
 import pt.iscte.poo.utils.Point2D;
 
-public abstract class Movable extends GameElement implements MovableInterface {
-    
-    public static Movable create( String objectName , Point2D position ){
-        switch (objectName) {
-            case "Palete": 
-                return new Palete(position);
-            case "Caixote":
-                return new Caixote(position);
-            case "Empilhadora":
-                return new Empilhadora(position);
-            default: 
-                throw new IllegalArgumentException("This object doesn't exist :( [Movable]");
-        }
+public abstract class Movable extends GameElement {
+
+    public Movable(Point2D position) {
+        super(position);
     }
+
+    public Point2D getPosition() {
+        return super.getPosition();
+    }
+
+    public void setPosition(Point2D position) {
+        super.setPosition(position);
+    }
+
+    public void movePosition(Direction direction) {
+		Point2D newPosition = super.getPosition().plus(direction.asVector());
+		if (newPosition.getX()>=0 && newPosition.getX()<10 && newPosition.getY()>=0 && newPosition.getY()<10 ){
+			super.setPosition(newPosition);
+		}
+	}
+
+    public Point2D nextPosition(int key) {
+		Direction direction = Direction.directionFor(key);
+		return super.getPosition().plus(direction.asVector());
+	}
+    
 }

@@ -6,6 +6,12 @@ import pt.iscte.poo.utils.Point2D;
 
 public abstract class GameElement implements ImageTile {
 
+    private Point2D position;
+
+    public GameElement(Point2D position) {
+        this.position = position;
+    }
+
     public static GameElement create (char c, Point2D position){
         switch (c){
             case '#':
@@ -13,9 +19,9 @@ public abstract class GameElement implements ImageTile {
             case 'O':
                 return new Buraco(position);
             case 'X':
-                return new Alvo(position,false);
+                return new Alvo(position);
             case 'C':
-                return new Caixote(position,true);
+                return new Caixote(position);
             case 'P':
                 return new Palete(position);
             case 'E':
@@ -27,7 +33,7 @@ public abstract class GameElement implements ImageTile {
             case '=':
                 return new Vazio(position);
             case '%':
-                return new ParedeRachada(position,true); // mais tarde ira ser posto a false quando se implementar o martelo
+                return new ParedeRachada(position);
             case 'B':
                 return new Bateria(position);
             case 'M':
@@ -37,4 +43,13 @@ public abstract class GameElement implements ImageTile {
                 throw new IllegalArgumentException("Invalid element name: " + c + "the element doesnt exist :(");
         }
     }
+
+    public Point2D getPosition() {
+        return position;
+    }
+
+    public void setPosition(Point2D position) {
+        this.position = position;
+    }
+    
 }
