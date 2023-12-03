@@ -1,6 +1,7 @@
 package pt.iscte.poo.sokobanstarter;
 
 import java.util.Iterator;
+import java.util.function.Consumer;
 
 import pt.iscte.poo.utils.Direction;
 import pt.iscte.poo.utils.Point2D;
@@ -10,20 +11,26 @@ public class Empilhadora extends Movable{
 	private String imageName;
 	private int Battery;
 	private boolean setHammer;
+	private int moves;
 
-	private final int BATTERY_RELOAD = 50;
 	private final int FULL_BATTERY = 100;
 	GameEngine gameEngine = GameEngine.getInstance();
+	
 	
 	public Empilhadora(Point2D position){
         super(position);
 		this.Battery = FULL_BATTERY;
 		this.imageName = "Empilhadora_D";
 		this.setHammer = false;
+		this.moves = 0;
 	}
 
 	public int getBattery() {
 		return Battery;
+	}
+
+	public int getMoves() {
+		return moves;
 	}
 
 	@Override
@@ -58,20 +65,20 @@ public class Empilhadora extends Movable{
 		switch (direction) {
 			case UP:
 				imageName = "Empilhadora_U";
-			break;
+				break;
 			case DOWN:
 				imageName = "Empilhadora_D";
-			break;
+				break;
 			case LEFT:
 				imageName = "Empilhadora_L";
-			break;
+				break;
 			case RIGHT:
 				imageName = "Empilhadora_R";
-			break;
-	
+				break;
+
 			default:
 				imageName = "Empilhadora_U";
-			break;
+				break;
 		}
 	}
 
@@ -81,55 +88,64 @@ public class Empilhadora extends Movable{
 		}
 		return false;
 	}
+
+	public boolean canBobcatMove(Direction direction) {
+		Point2D newPosition = getPosition().plus(direction.asVector());
+		for (GameElement ge : gameEngine.getGameElementsList()) {
+			if (ge instanceof Movable && ge.getPosition().equals(newPosition)) {
+				return false;
+			} else if ( (ge instanceof Parede || ge instanceof ParedeRachada) && ge.getPosition().equals(newPosition)) {
+				return false;
+			}
+		}
+		return true;
+	}
 	
 	// Move a empilhadora para a direcao dada, se estiver dentro dos limites
 	public void driveTo(Direction direction) {
 		Point2D newPosition = getPosition().plus(direction.asVector());
 		if (PosChecker(newPosition)){
-			setPosition(newPosition);
-			Battery--;
+			for (GameElement ge : gameEngine.getGameElementsList()) {
+				if (ge instanceof Movable && ge.getPosition().equals(newPosition)) {
+					((Movable)ge).movableInteractWith(this);
+					break;
+				}
+			}
+
+			if (canBobcatMove(direction)) {
+				setPosition(newPosition);
+				Battery--;
+				moves++;
+			}
+
+			//interagir com um Alvo ou outro elemento
+			for ( GameElement ge : gameEngine.getGameElementsList()) {
+				if (ge instanceof Interactable && ge.getPosition().equals(newPosition)) {
+					((Interactable)ge).interactWith(this);
+					break;
+				}
+			}
+
 			if( Battery == 0 ) {
 				gameEngine.infoBox("Click SPACE for restart ", "You ran out of battery :(");
-				gameEngine.restartGame(gameEngine.level_num);
+				gameEngine.restartGame();
 			}
+			
 		}
 	}
 
-	public void interactWith(GameElement ge) {
-		if (ge instanceof Caixote || ge instanceof Palete) {
-			Point2D newPosition = ge.getPosition().plus(Direction.directionFor(gameEngine.getGui().keyPressed()).asVector());
-			if (PosChecker(newPosition)) {
-				ge.setPosition(newPosition);
-				Battery--;
-			}
-		}
+	public void pickUpItem(Class<?> itemClass, Consumer<Boolean> action) {
+    	Iterator<GameElement> iterator = gameEngine.getGameElementsList().iterator();
+    	while (iterator.hasNext()) {
+        	GameElement item = iterator.next();
+        	if (itemClass.isInstance(item)) {
+            	if (item.getPosition().equals(this.getPosition())) {
+                	action.accept(true);
+                	iterator.remove();
+                	gameEngine.getGui().removeImage(item);
+            	}
+        	}
+    	}
 	}
 
-	public void pickUpBattery() {
-		Iterator<GameElement> iterator = gameEngine.getGameElementsList().iterator();
-		while (iterator.hasNext()) {
-			GameElement item = iterator.next();
-			if (item instanceof Bateria) {
-				if (item.getPosition().equals(this.getPosition())) {
-					this.addBattery(BATTERY_RELOAD);
-					iterator.remove();
-					gameEngine.getGui().removeImage(item);
-				}
-			}
-		}
-	}
-
-	public void pickUpHammer() {
-		Iterator<GameElement> iterator = GameEngine.getInstance().getGameElementsList().iterator();
-		while (iterator.hasNext()) {
-			GameElement item = iterator.next();
-			if (item instanceof Martelo) {
-				if (item.getPosition().equals(this.getPosition())) {
-					this.setHammer(true);
-					iterator.remove();
-					gameEngine.getGui().removeImage(item);
-				}
-			}
-		}
-	}
 }

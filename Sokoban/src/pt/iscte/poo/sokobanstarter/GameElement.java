@@ -1,6 +1,7 @@
 package pt.iscte.poo.sokobanstarter;
 
 import pt.iscte.poo.gui.ImageTile;
+import pt.iscte.poo.utils.Direction;
 import pt.iscte.poo.utils.Point2D;
 
 
@@ -51,5 +52,15 @@ public abstract class GameElement implements ImageTile {
     public void setPosition(Point2D position) {
         this.position = position;
     }
-    
+
+    public Point2D previousPosition() {
+        Point2D d = this.getPosition().plus((Direction.directionFor(GameEngine.getInstance().getGui().keyPressed())).opposite().asVector());
+        return d;
+    }
+
+     public Point2D nextPosition(int key) {
+		Direction direction = Direction.directionFor(key);
+		return this.getPosition().plus(direction.asVector());
+	}
+
 }

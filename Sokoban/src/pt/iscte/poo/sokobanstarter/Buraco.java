@@ -1,8 +1,9 @@
 package pt.iscte.poo.sokobanstarter;
 import pt.iscte.poo.utils.Direction;
+//import pt.iscte.poo.utils.Direction;
 import pt.iscte.poo.utils.Point2D;
 
-public class Buraco extends GameElement implements Interaction {
+public class Buraco extends GameElement implements Interactable {
 
     GameEngine gameEngine = GameEngine.getInstance();
 
@@ -23,20 +24,20 @@ public class Buraco extends GameElement implements Interaction {
     @Override
     public void interactWith(GameElement ge) {
         if (ge instanceof Palete) {
-            gameEngine.getGameElementsList().remove(ge);
-            gameEngine.getGameElementsList().remove(this);
-        } else if ( ge instanceof Caixote) {
-            gameEngine.bobcat.driveTo(Direction.directionFor(gameEngine.getGui().keyPressed()));
-            gameEngine.bobcat.move(gameEngine.getGui().keyPressed());
-            gameEngine.getGameElementsList().remove(ge);
+            gameEngine.bobcat.setPosition(gameEngine.bobcat.getPosition().plus(Direction.directionFor(gameEngine.getGui().keyPressed()).asVector()));
+            gameEngine.removeGameElement(this);
+            gameEngine.removeGameElement(ge);
+        } else if ( ge instanceof Caixote ) {
+            gameEngine.bobcat.setPosition(gameEngine.bobcat.getPosition().plus(Direction.directionFor(gameEngine.getGui().keyPressed()).asVector()));
+            gameEngine.removeGameElement(ge);
             gameEngine.getGui().removeImage(ge);
-            gameEngine.infoBox("Press SPACE for restart", "The number of boxes on inferior than the targets :(");
-            gameEngine.restartGame(gameEngine.level_num);
+            gameEngine.infoBox("     [Box fell in a hole] \n" + "Press SPACE for restart", "You Lost :(");
+            gameEngine.restartGame();
         } else if ( ge instanceof Empilhadora) {
-            gameEngine.getGameElementsList().remove(ge);
+            gameEngine.removeGameElement(ge);
             gameEngine.getGui().removeImage(ge);
-            gameEngine.infoBox("Press SPACE for restart", "You Lost :(");
-            gameEngine.restartGame(gameEngine.level_num);
+            gameEngine.infoBox("   [Bobcat fell in a hole] \n" + "Press SPACE for restart", "You Lost :(");
+            gameEngine.restartGame();
         }
     }
 

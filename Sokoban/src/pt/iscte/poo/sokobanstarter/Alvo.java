@@ -1,10 +1,11 @@
 package pt.iscte.poo.sokobanstarter;
 import pt.iscte.poo.utils.Point2D;
 
-public class Alvo extends GameElement{
+public class Alvo extends GameElement implements Interactable {
 
+    private boolean occupied = false;
 
-    public Alvo(Point2D position) {
+    public Alvo(Point2D position ) {
         super(position);
     }
 
@@ -18,4 +19,17 @@ public class Alvo extends GameElement{
         return 1;
     }
 
+    public boolean isOccupied() {
+        return occupied;
+    }
+
+    @Override
+    public void interactWith(GameElement ge) {
+
+        if (ge instanceof Caixote){
+            occupied = true;
+        } else if (ge instanceof Empilhadora){
+            occupied = false;
+        }
+    }
 }

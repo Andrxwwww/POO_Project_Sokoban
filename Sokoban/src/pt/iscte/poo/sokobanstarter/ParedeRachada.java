@@ -1,9 +1,11 @@
 package pt.iscte.poo.sokobanstarter;
+import pt.iscte.poo.utils.Direction;
 import pt.iscte.poo.utils.Point2D;
 
-public class ParedeRachada extends GameElement implements Interaction  {
+public class ParedeRachada extends GameElement implements Interactable  {
 
 	private Point2D position;
+    GameEngine engine = GameEngine.getInstance();
 	
 	public ParedeRachada(Point2D position){
         super(position);
@@ -25,9 +27,9 @@ public class ParedeRachada extends GameElement implements Interaction  {
 
     public void interactWith(GameElement ge) {
         if (ge instanceof Empilhadora && ((Empilhadora) ge).hasHammer()) {
-            GameEngine.getInstance().getGameElementsList().remove(this);
-            GameEngine.getInstance().getGui().removeImage(this);
-            ge.setPosition(this.getPosition());
+            engine.bobcat.setPosition(engine.bobcat.getPosition().plus(Direction.directionFor(engine.getGui().keyPressed()).asVector()));
+            engine.removeGameElement(this);
+            engine.getGui().removeImage(this);
         }
     }
 

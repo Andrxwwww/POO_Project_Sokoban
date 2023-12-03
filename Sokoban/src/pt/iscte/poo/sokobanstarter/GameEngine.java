@@ -4,6 +4,8 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.function.Predicate;
+import java.util.Iterator;
 import java.io.File;
 import java.io.FileNotFoundException;
 
@@ -22,15 +24,15 @@ public class GameEngine implements Observer {
 
 	private static GameEngine INSTANCE; // Referencia para o unico objeto GameEngine (singleton)
 	private ImageMatrixGUI gui; // Referencia para ImageMatrixGUI (janela de interface com o utilizador)
-	private List<GameElement> gameElementsList; // Lista de GameElements
-	public Empilhadora bobcat; // Referencia para a empilhadora
-	public int level_num; // Numero do nivel a carregar
-	public int numberOfTargetsWithBoxes; // Numero de alvos com caixas
+	private List<GameElement> gameElementsList; // lista com os gameElements do Jogo
+	public Empilhadora bobcat; // Referencia para a empilhadora (player principal)
+	public int level_num; // Numero do nivel
 	public int numberOfTargets; // Numero de alvos
-	private int moves; // Numero de movimentos da empilhadora
-	private String PlayerName; // Nome do jogador
+	public int score; // Pontuacao
+	public String playerName; // Nome do jogador
 
-	public final int FIRST_LEVEL = 6;
+	public final int BATTERY_RELOAD = 50;
+	public final int FIRST_LEVEL = 0;
 
 	private GameEngine() {
 		gameElementsList = new ArrayList<>();
@@ -42,7 +44,8 @@ public class GameEngine implements Observer {
 		return INSTANCE;
 	}
 
-	public ImageMatrixGUI getGui() {
+	//--GETTERS--
+	public ImageMatrixGUI getGui() { 
 		return this.gui;
 	}
 	
@@ -50,6 +53,7 @@ public class GameEngine implements Observer {
 		return this.gameElementsList;
 	}
 
+	//---FUNCAO QUE INICIA O JOGO---
 	public void start() {
 
 		gui = ImageMatrixGUI.getInstance(); // 1. obter instancia ativa de ImageMatrixGUI
@@ -57,12 +61,12 @@ public class GameEngine implements Observer {
 		gui.registerObserver(this); // 3. registar o objeto ativo GameEngine como observador da GUI
 		gui.go(); // 4. lancar a GUI
 
-		this.numberOfTargetsWithBoxes = 0;
 		this.numberOfTargets = 0;
-		this.moves = 0;
-		this.level_num = FIRST_LEVEL; // comeca no nivel 1
+		this.level_num = FIRST_LEVEL; // comeca no nivel 0
+		this.score = 0;
 		inputPlayerName();
 
+		Score.createHighScoreFile(); // criar o ficheiro de scores
 		createLevel(level_num); // criar o armazem
 		sendImagesToGUI(); // enviar as imagens para a GUI
 	}
@@ -73,61 +77,97 @@ public class GameEngine implements Observer {
 
 		otherKeyInteractions(key); 
 		gui.update();
-		if (bobcat != null && Direction.isDirection(key)) {
+		if (bobcat != null && Direction.isDirection(key)) { // se a empilhadora nao for null e a tecla pressionada for uma direcao(setinhas)
 			bobcatKeyMechanics(key);
-			bobcat.pickUpBattery();
-			bobcat.pickUpHammer();
-			levelIncrementer();
+			gui.setStatusMessage(" SOKOBAN " + " | Player: " + playerName + " | Level: " + level_num + " | Battery: " + bobcat.getBattery() + " | Moves: " + bobcat.getMoves() + " | Score: " + score);
+			bobcat.pickUpItem(Bateria.class, b -> bobcat.addBattery(BATTERY_RELOAD));
+			bobcat.pickUpItem(Martelo.class, m -> bobcat.setHammer(true));
+
+			winGame();
 		}
 	}
 
-	// --- FUNCTIONS FOR KEYS ---
+	private void bobcatKeyMechanics(int key) {
+		bobcat.move(key);
+		bobcat.driveTo(Direction.directionFor(key));
+	}
+
+	// --- FUNCAO PARA ADICIONAR OUTRO TIPO DE UTILIZACAO COM OUTRAS TECLAS ---
 	public void otherKeyInteractions(int key) {
 		if (key == KeyEvent.VK_SPACE) {
-			restartGame(level_num);
+			restartGame();
 		}
 	}
 
+	// ---FUNCOES PARA A GUI & INTERACOES COM O UTILIZADOR---
 	public void infoBox(String infoMessage, String titleBar) {
 		JOptionPane.showMessageDialog(null, infoMessage, titleBar, javax.swing.JOptionPane.INFORMATION_MESSAGE);
 	}
 
 	public void inputPlayerName() {
-		this.PlayerName = JOptionPane.showInputDialog("Insert your player name:");
-		if (this.PlayerName == null) {
-			infoBox("You have to insert a name ,try ggain", "Error");
+		this.playerName = JOptionPane.showInputDialog("Insert your player name:");
+		if (this.playerName == null) {
+			infoBox("You have to insert a name ,try again", "Error");
 			GameEngine.getInstance().start();
 		}
 	}
 
-	private void levelIncrementer() {
+	// ---FUNCOES AUXILIARES---
+	public static List<GameElement> selectGEList(List<GameElement> list, Predicate<GameElement> predicate) {
+		List<GameElement> selection = new ArrayList<>();
+		for (GameElement ge : list) {
+			if (predicate.test(ge)) {
+				selection.add(ge);
+			}
+		}
+		return selection;
+	}
+
+	public void removeGameElement(GameElement ge) {
+		Iterator<GameElement> iterator = gameElementsList.iterator();
+		while (iterator.hasNext()) {
+			GameElement item = iterator.next();
+			if (item.equals(ge)) {
+				iterator.remove();
+			}
+		}
+	}
+
+	// ---FUNCOES PARA O ESTADO DO JOGO---
+	private void winGame() {
+		int numberOfTargetsWithBoxes = 0;
+		for (GameElement ge : selectGEList(gameElementsList, ge -> ge instanceof Alvo)) {
+			if (((Alvo)ge).isOccupied()) {
+				numberOfTargetsWithBoxes++;
+			}
+		}
+
 		if (numberOfTargetsWithBoxes == numberOfTargets) {
+			this.score += 100000 / ((bobcat.getMoves()) + (bobcat.getBattery())); // Por isso , quanto mair o score , menor os movimentos e a bateria
 			this.level_num++;
 			if (this.level_num > 6) {
-				infoBox("press SPACE for restart or ENTER for exit", "You Won the Game :D !!");
+				infoBox("you got " + score + ", press ENTER for Exit", "You Won the Game :D !!");
+				Score.writePlayerScoreInFile(this.level_num, this.playerName, score );
 				System.exit(0);
 			} else {
 				infoBox("press ENTER for next level", "Congrats!!");
 			}
-			restartGame(this.level_num++);
+			restartGame();
 		}
 	}
 
-	public void restartGame(int level_num) {
+	public void restartGame() {
 		bobcat.setHammer(false);
 
 		gui.clearImages(); // apaga todas as imagens atuais da GUI
 		gameElementsList.clear(); // apaga todos os elementos da lista de elementos
-		numberOfTargetsWithBoxes = 0;
-		numberOfTargets = 0	;
-		moves = -1;
-		this.level_num = level_num; // reecria o primeiro nivel
+		numberOfTargets = 0;
 
-		createLevel(level_num);
+		createLevel(this.level_num);
 		sendImagesToGUI();
 	}
 
-	// funcao que cria o nivel
+	//---FUNCOES PARA A CRIACAO DO NIVEL & ADICIONAR ELEMENTOS A LISTA---
 	private void createLevel(int level_num) {
 		try {
 			Scanner scanner = new Scanner(new File("levels\\level" + level_num + ".txt"));
@@ -147,8 +187,6 @@ public class GameEngine implements Observer {
 		gui.update();
 	}
 
-	// funcao que dado um gameElement ele vai adicionar a lista correspondente
-	// (tinha-se de fazer com gameElements é o porquê de ter feito asssim)
 	private void addGameElementToGUI(GameElement gameElement) {
 		if (gameElement instanceof Caixote || gameElement instanceof Palete 
 		|| gameElement instanceof ParedeRachada || gameElement instanceof Bateria 
@@ -165,101 +203,9 @@ public class GameEngine implements Observer {
 		} else {
 			gameElementsList.add(gameElement);
 		}
-	} 
-
-	private void bobcatKeyMechanics(int key) {
-
-		if (bobcatCollisionsChecker()) {
-			bobcat.move(key);
-			bobcat.driveTo(Direction.directionFor(key));
-			moves++;
-			gui.setStatusMessage(" SOKOBAN " + " | Player: " + PlayerName + " | Level: " + level_num + " | Battery: " + bobcat.getBattery() + " | Moves: " + moves);
-			//System.out.println(bobcat.getBattery()); // debug para ver a bateria se estácorreta
-			//System.out.println( "Numero total de Targets: " + numberOfTargets); // debug para ver o numero de alvos
-			//System.out.println( "Numero de Caixotes nos alvos: " + numberOfTargetsWithBoxes); // debug para ver o numero de alvos com caixotes
-		}
-		bobcat.move(key);
 	}
 
-	/* funcao que checka se a empilhadora pode passar ou nao 
-	[ se for um caixote ou uma palete entao move o caixote ou a palete + a empilhadora 
-	, se for parede ou paredeRachada entao nao passa ] */
-	public boolean bobcatCollisionsChecker() {
-		for (GameElement ge : gameElementsList) {
-			if (bobcat.nextPosition(gui.keyPressed()).equals(ge.getPosition())) {
-				if (ge instanceof Movable) {
-					if (collidableCollisionChecker(ge)) {
-						if (isMovableOnTarget("Alvo", "Caixote")){
-							numberOfTargetsWithBoxes++;
-						} else if (numberOfTargetsWithBoxes > 0 && numberOfTargetsWithBoxes <= numberOfTargets 
-							&& isSomethingAbove(ge.getPosition(), "Alvo")){ // se o caixote sair do alvo
-							numberOfTargetsWithBoxes--;
-						}
-						bobcat.interactWith(ge);
-						return true;
-					} else {
-						return false; // se o caixote ou a palete nao mover entao , a empilhadora nao se move tambem
-					}
-				} else if (ge instanceof Buraco){
-					((Buraco)ge).interactWith(bobcat);
-					return true;
-				} else if (ge instanceof ParedeRachada) {
-					((ParedeRachada)ge).interactWith(bobcat);
-					return false;
-				} else if (ge instanceof Teleporte) {
-					((Teleporte)ge).interactWith(bobcat);
-					return true;
-				} else if (ge instanceof Parede) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-
-	// funcao que verifica se um caixote ou uma palete pode mover
-	public boolean collidableCollisionChecker (GameElement ge) {
-		for (GameElement next_ge : gameElementsList){
-			if (ge.getPosition().plus(Direction.directionFor(gui.keyPressed()).asVector()).equals(next_ge.getPosition())) {
-				if (next_ge instanceof Movable || next_ge instanceof ParedeRachada || next_ge instanceof Parede ) {
-					return false;
-				} else if (next_ge instanceof Buraco && ge instanceof Movable) {
-					((Buraco)next_ge).interactWith(ge);
-					return true;
-				} else if (next_ge instanceof Teleporte && ge instanceof Movable){
-					((Teleporte)next_ge).interactWith(ge);
-					return true;
-				}
-			}
-		}
-		return true;
-	}
-
-	// funcao que verifica se um caixote está em cima de um alvo
-	public boolean isMovableOnTarget(String target, String movable) {
-		for (GameElement ge1 : gameElementsList) {
-			if (ge1.getName().equals(target)) {
-				for (GameElement ge2 : gameElementsList) {
-					if (ge2.getName().equals(movable) && ge2 instanceof Movable && ge1.getPosition().equals(((Movable)ge2).nextPosition(gui.keyPressed())) 
-					&& bobcat.nextPosition(gui.keyPressed()).equals(ge2.getPosition())) {
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
-
-	// funcao que verifica se um ponto tem algum gameElement em cima 
-	public boolean isSomethingAbove(Point2D point , String name){
-		for (GameElement ge : gameElementsList) {
-			if (ge.getPosition().equals(point) && ge.getName().equals(name)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
+	//---FUNCAO QUE ENVIA OS ELEMENTOS PARA A GUI---
 	private void sendImagesToGUI() {
 		gui.addImage(bobcat);
 		for (GameElement ge : gameElementsList) {
