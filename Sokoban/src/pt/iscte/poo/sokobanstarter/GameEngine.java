@@ -28,6 +28,7 @@ public class GameEngine implements Observer {
 	public Empilhadora bobcat; // Referencia para a empilhadora (player principal)
 	public int level_num; // Numero do nivel
 	public int numberOfTargets; // Numero de alvos
+	public int numberOfRestarts; // Numero de restarts
 	public int score; // Pontuacao
 	public String playerName; // Nome do jogador
 
@@ -61,13 +62,14 @@ public class GameEngine implements Observer {
 		gui.registerObserver(this); // 3. registar o objeto ativo GameEngine como observador da GUI
 		gui.go(); // 4. lancar a GUI
 
+		this.numberOfRestarts = 0;
 		this.numberOfTargets = 0;
 		this.level_num = FIRST_LEVEL; // comeca no nivel 0
 		this.score = 0;
 		inputPlayerName();
 
-		Score.createHighScoreFile(); // criar o ficheiro de scores
-		createLevel(level_num); // criar o armazem
+		Score.createHighScoreFile(); // criar o ficheiro de scores , se nao existir
+		createLevel(level_num); // criar o nivel
 		sendImagesToGUI(); // enviar as imagens para a GUI
 	}
 
@@ -82,12 +84,11 @@ public class GameEngine implements Observer {
 			gui.setStatusMessage(" SOKOBAN " + " | Player: " + playerName + " | Level: " + level_num + " | Battery: " + bobcat.getBattery() + " | Moves: " + bobcat.getMoves() + " | Score: " + score);
 			bobcat.pickUpItem(Bateria.class, b -> bobcat.addBattery(BATTERY_RELOAD));
 			bobcat.pickUpItem(Martelo.class, m -> bobcat.setHammer(true));
-
-			winGame();
+			winGame(); // verifica se o jogo foi ganho a cada movimento
 		}
 	}
-
-	private void bobcatKeyMechanics(int key) {
+	
+	private void bobcatKeyMechanics(int key) { // movimentacao da empilhadora (visual e logico)
 		bobcat.move(key);
 		bobcat.driveTo(Direction.directionFor(key));
 	}
@@ -95,7 +96,10 @@ public class GameEngine implements Observer {
 	// --- FUNCAO PARA ADICIONAR OUTRO TIPO DE UTILIZACAO COM OUTRAS TECLAS ---
 	public void otherKeyInteractions(int key) {
 		if (key == KeyEvent.VK_SPACE) {
+			numberOfRestarts++;
 			restartGame();
+		} else if ( key == KeyEvent.VK_L) {
+			System.exit(0);
 		}
 	}
 
@@ -143,7 +147,8 @@ public class GameEngine implements Observer {
 		}
 
 		if (numberOfTargetsWithBoxes == numberOfTargets) {
-			this.score += 100000 / ((bobcat.getMoves()) + (bobcat.getBattery())); // Por isso , quanto mair o score , menor os movimentos e a bateria
+			this.score += 100000 / ((bobcat.getMoves()) + (bobcat.getBattery()) + (numberOfRestarts)); // Por isso , quanto mair o score , menor os movimentos e a bateria
+			this.numberOfRestarts = 0;
 			this.level_num++;
 			if (this.level_num > 6) {
 				infoBox("you got " + score + ", press ENTER for Exit", "You Won the Game :D !!");

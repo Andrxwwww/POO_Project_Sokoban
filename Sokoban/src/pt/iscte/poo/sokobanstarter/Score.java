@@ -72,7 +72,7 @@ public class Score {
         }
 
         public int getScore() {
-            //FORMULA FOR THE POINTS: 100000 / ((bobcat.getMoves()) + (bobcat.getBattery()))
+            //FORMULA FOR THE POINTS: 100000 / ((bobcat.getMoves()) + (bobcat.getBattery()) + (numberOfRestarts));
             return score;
         }
 

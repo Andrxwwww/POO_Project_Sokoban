@@ -43,6 +43,7 @@ public abstract class Movable extends GameElement {
         return true;
     }
 
+    // para verificar com o que é que o movable vai interagir
     public void movableInteractWith(GameElement ge) {
         if (ge instanceof Empilhadora) {
             if (canMovableMove(Direction.directionFor(GameEngine.getInstance().getGui().keyPressed()))) {

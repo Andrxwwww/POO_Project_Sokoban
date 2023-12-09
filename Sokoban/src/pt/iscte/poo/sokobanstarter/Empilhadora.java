@@ -105,6 +105,7 @@ public class Empilhadora extends Movable{
 	public void driveTo(Direction direction) {
 		Point2D newPosition = getPosition().plus(direction.asVector());
 		if (PosChecker(newPosition)){
+			// para interagir com um Movable (caixote ou palete)se for o caso
 			for (GameElement ge : gameEngine.getGameElementsList()) {
 				if (ge instanceof Movable && ge.getPosition().equals(newPosition)) {
 					((Movable)ge).movableInteractWith(this);
@@ -112,13 +113,14 @@ public class Empilhadora extends Movable{
 				}
 			}
 
+			// para verificar se o Bobcat pode mover-se para a nova posicao
 			if (canBobcatMove(direction)) {
 				setPosition(newPosition);
 				Battery--;
 				moves++;
 			}
 
-			//interagir com um Alvo ou outro elemento
+			// para interagir com um Alvo ou outro elemento se for o caso
 			for ( GameElement ge : gameEngine.getGameElementsList()) {
 				if (ge instanceof Interactable && ge.getPosition().equals(newPosition)) {
 					((Interactable)ge).interactWith(this);
